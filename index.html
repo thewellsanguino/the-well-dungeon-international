@@ -1306,7 +1306,7 @@ let filter       = 'all';
 
 /* ── Raider.io fetch ──────────────────────────── */
 async function fetchChar(name, realm){
-  const f = 'mythic_plus_scores_by_season:current,mythic_plus_best_runs,gear,thumbnail_url,class,active_spec_name';
+  const f = 'mythic_plus_scores_by_season:current,mythic_plus_best_runs,gear,thumbnail_url';
   try {
     const r = await fetch(`https://raider.io/api/v1/characters/profile?region=eu&realm=${encodeURIComponent(realm)}&name=${encodeURIComponent(name)}&fields=${f}`);
     const d = await r.json();
@@ -1328,7 +1328,7 @@ async function loadAllScores(){
       const runs  = (data.mythic_plus_best_runs || []).slice(0,4).map(r => `+${r.mythic_level} ${r.dungeon.replace(/The |of |the /gi,'').substring(0,12)}`);
       const ilvl  = data.gear ? data.gear.item_level_equipped : '?';
       const cls   = (data.class||'').toLowerCase().replace(/\s/g,'-');
-      const spec  = data.active_spec_name || '';
+      const spec  = '';
       const thumb = data.thumbnail_url || '';
       scores[key(p)] = { score, runs, ilvl, thumb, cls, spec, updated: Date.now() };
     }
