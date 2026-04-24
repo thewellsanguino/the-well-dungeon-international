@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Well Dungeon International</title>
+<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   VARIABLES & RESET
+═══════════════════════════════════════════════ */
+:root {
+  --bg:        #030508;
+  --bg2:       #070c12;
+  --stone:     #0d1520;
+  --stone2:    #111d2c;
+  --frame:     #1a2e45;
+  --frame2:    #243d57;
+  --gold:      #c8a84b;
+  --gold2:     #f0d060;
+  --gold3:     #7a5c1e;
+  --gold-dim:  rgba(200,168,75,0.15);
+  --arcane:    #4a9eff;
+  --arcane2:   #7bbfff;
+  --arcane-dim:rgba(74,158,255,0.12);
+  --rune:      #2060c0;
+  --epic:      #a335ee;
+  --rare:      #0070dd;
+  --uncommon:  #1eff00;
+  --common:    #ffffff;
+  --blood:     #8b0000;
+  --blood2:    #cc2200;
+  --text:      #c8b89a;
+  --text2:     #e8d8b0;
+  --muted:     #5a6e80;
+  --shadow:    rgba(0,0,0,0.8);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Crimson Text', Georgia, serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* ═══════════════════════════════════════════════
+   BACKGROUND LAYERS
+═══════════════════════════════════════════════ */
+#canvas-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+.bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 100% 50% at 50% 0%,   rgba(10,20,50,0.95) 0%, transparent 70%),
+    radial-gradient(ellipse 80%  60% at 0%   50%,  rgba(5,10,20,0.7)   0%, transparent 60%),
+    radial-gradient(ellipse 80%  60% at 100% 50%,  rgba(5,10,20,0.7)   0%, transparent 60%),
+    radial-gradient(ellipse 100% 50% at 50% 100%,  rgba(10,20,50,0.95) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Stone texture overlay */
+.stone-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ═══════════════════════════════════════════════
+   LAYOUT WRAP
+═══════════════════════════════════════════════ */
+.wrap {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+}
+
+/* ═══════════════════════════════════════════════
+   WOW-STYLE PANEL / FRAME MIXIN
+═══════════════════════════════════════════════ */
+.wow-panel {
+  background: linear-gradient(180deg, var(--stone2) 0%, var(--stone) 100%);
+  border: 1px solid var(--frame);
+  box-shadow:
+    inset 0 1px 0 rgba(200,168,75,0.2),
+    inset 0 -1px 0 rgba(0,0,0,0.5),
+    0 4px 20px rgba(0,0,0,0.6);
+  position: relative;
+}
+
+.wow-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(200,168,75,0.08);
+  pointer-events: none;
+}
+
+/* Corner ornaments */
+.corners::after, .corners::before { display: none; }
+.corners {
+  position: relative;
+}
+.corners .c { position: absolute; width: 16px; height: 16px; }
+.corners .c.tl { top: -1px; left: -1px; border-top: 2px solid var(--gold3); border-left: 2px solid var(--gold3); }
+.corners .c.tr { top: -1px; right: -1px; border-top: 2px solid var(--gold3); border-right: 2px solid var(--gold3); }
+.corners .c.bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--gold3); border-left: 2px solid var(--gold3); }
+.corners .c.br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--gold3); border-right: 2px solid var(--gold3); }
+
+/* ═══════════════════════════════════════════════
+   HEADER / HERO
+═══════════════════════════════════════════════ */
+.hero {
+  text-align: center;
+  padding: 70px 20px 50px;
+  position: relative;
+}
+
+/* Rune circle decoration */
+.rune-ring {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  border: 1px solid rgba(74,158,255,0.06);
+  pointer-events: none;
+  animation: runeRotate 60s linear infinite;
+}
+.rune-ring::before {
+  content: '';
+  position: absolute;
+  inset: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(200,168,75,0.04);
+}
+.rune-ring::after {
+  content: '✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 0.5rem;
+  color: rgba(200,168,75,0.08);
+  letter-spacing: 50px;
+  white-space: nowrap;
+}
+@keyframes runeRotate { to { transform: translateX(-50%) rotate(360deg); } }
+
+.event-tag {
+  display: inline-block;
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.45em;
+  color: var(--arcane);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  padding: 4px 16px;
+  border: 1px solid rgba(74,158,255,0.25);
+  background: var(--arcane-dim);
+  animation: fadeSlideDown 0.8s ease both;
+}
+
+.hero-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  animation: fadeSlideDown 0.8s 0.1s ease both;
+}
+
+.hero-title .line1 {
+  display: block;
+  background: linear-gradient(180deg, var(--gold2) 0%, var(--gold) 60%, var(--gold3) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 30px rgba(200,168,75,0.5));
+}
+
+.hero-title .line2 {
+  display: block;
+  font-size: 0.55em;
+  letter-spacing: 0.35em;
+  color: var(--arcane2);
+  -webkit-text-fill-color: var(--arcane2);
+  filter: drop-shadow(0 0 20px rgba(74,158,255,0.6));
+  margin-top: 4px;
+}
+
+.hero-tagline {
+  font-family: 'Crimson Text', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--muted);
+  margin-top: 14px;
+  animation: fadeSlideDown 0.8s 0.2s ease both;
+}
+
+.hero-tagline em {
+  color: var(--gold);
+  font-style: normal;
+}
+
+/* Gold divider */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0;
+  animation: fadeSlideDown 0.8s 0.25s ease both;
+}
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold3), transparent);
+}
+.divider-gem {
+  width: 10px; height: 10px;
+  background: radial-gradient(circle, var(--gold2), var(--gold));
+  transform: rotate(45deg);
+  box-shadow: 0 0 12px rgba(200,168,75,0.6);
+  flex-shrink: 0;
+}
+.divider-gem.blue {
+  background: radial-gradient(circle, var(--arcane2), var(--arcane));
+  box-shadow: 0 0 12px rgba(74,158,255,0.6);
+}
+
+/* ═══════════════════════════════════════════════
+   META STRIP (dates, goal, countdown)
+═══════════════════════════════════════════════ */
+.meta-strip {
+  display: flex;
+  justify-content: center;
+  gap: 1px;
+  max-width: 760px;
+  margin: 0 auto 50px;
+  background: var(--frame);
+  border: 1px solid var(--frame);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(200,168,75,0.1);
+  animation: fadeSlideDown 0.8s 0.3s ease both;
+}
+.meta-item {
+  flex: 1;
+  background: linear-gradient(180deg, var(--stone2), var(--stone));
+  padding: 18px 12px;
+  text-align: center;
+}
+.meta-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.25em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.meta-value {
+  font-family: 'Cinzel', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gold2);
+  text-shadow: 0 0 10px rgba(200,168,75,0.4);
+}
+.meta-value.arcane {
+  color: var(--arcane2);
+  text-shadow: 0 0 10px rgba(74,158,255,0.4);
+  font-size: 0.9rem;
+}
+
+/* ═══════════════════════════════════════════════
+   PRIZES
+═══════════════════════════════════════════════ */
+.prizes-section {
+  margin-bottom: 50px;
+  animation: fadeUp 0.8s 0.35s ease both;
+}
+.section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.4em;
+  color: var(--gold);
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.section-title::before, .section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--frame2));
+}
+.section-title::after { background: linear-gradient(90deg, var(--frame2), transparent); }
+.section-title span { white-space: nowrap; }
+
+.prizes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.prize-card {
+  position: relative;
+  background: linear-gradient(160deg, var(--stone2) 0%, var(--stone) 100%);
+  border: 1px solid var(--frame);
+  padding: 28px 16px 22px;
+  text-align: center;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.prize-card:hover {
+  transform: translateY(-4px);
+}
+.prize-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.prize-card.p1::before { background: linear-gradient(90deg, transparent, #FFD700, transparent); box-shadow: 0 0 12px rgba(255,215,0,0.5); }
+.prize-card.p2::before { background: linear-gradient(90deg, transparent, #C0C0C0, transparent); }
+.prize-card.p3::before { background: linear-gradient(90deg, transparent, #CD7F32, transparent); }
+.prize-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(200,168,75,0.05), transparent);
+}
+.prize-medal {
+  font-size: 2.4rem;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 8px rgba(200,168,75,0.5));
+}
+.prize-place {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.p1 .prize-place { color: #FFD700; }
+.p2 .prize-place { color: #C0C0C0; }
+.p3 .prize-place { color: #CD7F32; }
+.prize-amount {
+  font-family: 'Cinzel', serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--gold2);
+  text-shadow: 0 0 20px rgba(200,168,75,0.5);
+}
+.prize-note {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 6px;
+  font-style: italic;
+}
+.prize-split-note {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 10px;
+  font-style: italic;
+  padding: 8px 16px;
+  border: 1px solid var(--frame);
+  background: var(--stone);
+}
+
+/* ═══════════════════════════════════════════════
+   TWO-COLUMN INFO LAYOUT
+═══════════════════════════════════════════════ */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 50px;
+  animation: fadeUp 0.8s 0.4s ease both;
+}
+
+.info-panel {
+  background: linear-gradient(180deg, var(--stone2), var(--stone));
+  border: 1px solid var(--frame);
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+}
+.info-panel::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.info-panel.gold-top::after   { background: linear-gradient(90deg, transparent, var(--gold3), transparent); }
+.info-panel.arcane-top::after { background: linear-gradient(90deg, transparent, var(--rune), transparent); }
+.info-panel.blood-top::after  { background: linear-gradient(90deg, transparent, var(--blood2), transparent); }
+
+.panel-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--frame);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-title.gold   { color: var(--gold); }
+.panel-title.arcane { color: var(--arcane); }
+.panel-title.blood  { color: var(--blood2); }
+
+.rule-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--text);
+}
+.rule-bullet {
+  color: var(--gold3);
+  font-size: 0.7rem;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.rule-item strong {
+  color: var(--gold2);
+  font-family: 'Cinzel', serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.rule-item .tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.08em;
+  padding: 1px 6px;
+  border: 1px solid;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.tag.epic     { border-color: var(--epic);   color: var(--epic); }
+.tag.rare     { border-color: var(--rare);   color: var(--rare); }
+.tag.uncommon { border-color: var(--uncommon); color: var(--uncommon); }
+
+.objective-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: rgba(0,0,0,0.2);
+  border-left: 2px solid var(--arcane-dim);
+}
+.obj-icon { font-size: 1.1rem; flex-shrink: 0; }
+.obj-text { font-size: 0.92rem; line-height: 1.4; }
+
+/* Full-width panel */
+.info-panel.full { grid-column: span 2; }
+
+/* ═══════════════════════════════════════════════
+   GOAL BAR
+═══════════════════════════════════════════════ */
+.goal-bar-section {
+  margin-bottom: 30px;
+}
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.goal-lbl {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.goal-val {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  color: var(--gold);
+}
+.goal-track {
+  height: 8px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid var(--frame);
+  position: relative;
+  overflow: visible;
+}
+.goal-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blood2), var(--gold));
+  transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
+  position: relative;
+  box-shadow: 0 0 10px rgba(200,168,75,0.4);
+}
+.goal-fill::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: -4px;
+  width: 16px;
+  height: 16px;
+  background: var(--gold2);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(200,168,75,0.8);
+  border: 2px solid var(--bg);
+}
+
+/* ═══════════════════════════════════════════════
+   RANKING TABLE
+═══════════════════════════════════════════════ */
+.ranking-section {
+  margin-bottom: 50px;
+  animation: fadeUp 0.8s 0.45s ease both;
+}
+.ranking-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.wow-btn {
+  background: linear-gradient(180deg, var(--stone2) 0%, rgba(7,12,18,0.9) 100%);
+  border: 1px solid var(--frame2);
+  color: var(--muted);
+  padding: 7px 16px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.wow-btn:hover, .wow-btn.active {
+  border-color: var(--gold3);
+  color: var(--gold2);
+  background: linear-gradient(180deg, rgba(200,168,75,0.12) 0%, rgba(200,168,75,0.04) 100%);
+  box-shadow: inset 0 1px 0 rgba(200,168,75,0.15), 0 0 8px rgba(200,168,75,0.1);
+}
+.wow-btn.refresh {
+  margin-left: auto;
+  border-color: var(--rune);
+  color: var(--arcane);
+}
+.wow-btn.refresh:hover {
+  border-color: var(--arcane);
+  color: var(--arcane2);
+  background: var(--arcane-dim);
+  box-shadow: 0 0 10px rgba(74,158,255,0.2);
+}
+.wow-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: linear-gradient(180deg, var(--stone2), var(--stone));
+  border: 1px solid var(--frame);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,168,75,0.08);
+}
+.ranking-table thead tr {
+  border-bottom: 2px solid var(--frame2);
+  background: linear-gradient(180deg, rgba(26,46,69,0.8), rgba(17,29,44,0.8));
+}
+.ranking-table th {
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.25em;
+  color: var(--gold);
+  text-transform: uppercase;
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 400;
+}
+.ranking-table th.center { text-align: center; }
+.ranking-table tbody tr {
+  border-bottom: 1px solid rgba(26,46,69,0.6);
+  transition: background 0.15s;
+  animation: rowSlide 0.4s ease both;
+}
+@keyframes rowSlide { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+.ranking-table tbody tr:hover {
+  background: rgba(200,168,75,0.04);
+}
+.ranking-table tbody tr.rank-1-row { background: rgba(255,215,0,0.04); }
+.ranking-table td { padding: 13px 16px; vertical-align: middle; }
+
+.rank-badge {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: 1.2rem;
+  text-align: center;
+  width: 46px;
+}
+.rk1 { color: #FFD700; text-shadow: 0 0 14px rgba(255,215,0,0.7); }
+.rk2 { color: #C0C0C0; text-shadow: 0 0 8px rgba(192,192,192,0.4); }
+.rk3 { color: #CD7F32; text-shadow: 0 0 8px rgba(205,127,50,0.4); }
+.rkn { color: var(--muted); }
+
+.char-cell { display: flex; align-items: center; gap: 12px; }
+.char-thumb {
+  width: 42px; height: 42px;
+  object-fit: cover;
+  border: 1px solid var(--frame2);
+  flex-shrink: 0;
+  background: var(--stone);
+}
+.char-thumb-ph {
+  width: 42px; height: 42px;
+  border: 1px solid var(--frame2);
+  flex-shrink: 0;
+  background: var(--stone);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 1.2rem;
+}
+.char-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.char-realm { font-size: 0.75rem; color: var(--muted); font-style: italic; margin-top: 2px; }
+
+/* Item quality colors */
+.q-epic     { color: var(--epic); }
+.q-rare     { color: var(--rare); }
+.q-uncommon { color: var(--uncommon); }
+
+.score-val {
+  font-family: 'Cinzel', serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  text-align: center;
+}
+.score-mini-bar {
+  height: 3px;
+  background: var(--frame);
+  margin-top: 5px;
+  width: 70px;
+  margin-left: auto; margin-right: auto;
+}
+.score-mini-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blood2), var(--gold));
+}
+
+.spec-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border: 1px solid var(--frame2);
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--text2);
+  background: rgba(0,0,0,0.3);
+  white-space: nowrap;
+}
+
+.keys-cell { font-size: 0.85rem; }
+.key-pill {
+  display: inline-block;
+  padding: 1px 6px;
+  background: rgba(0,70,120,0.3);
+  border: 1px solid rgba(74,158,255,0.2);
+  color: var(--arcane2);
+  font-size: 0.65rem;
+  font-family: 'Cinzel', serif;
+  margin: 1px;
+  white-space: nowrap;
+}
+
+.status-done { color: #1eff00; font-size: 0.7rem; }
+.status-prog { color: var(--gold); font-size: 0.7rem; }
+.status-wait { color: var(--muted); font-size: 0.7rem; }
+
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  border: 1px dashed var(--frame2);
+  background: linear-gradient(180deg, var(--stone2), var(--stone));
+}
+.empty-state .eq { font-size: 2rem; margin-bottom: 10px; }
+.empty-state strong {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.empty-state p { color: var(--muted); font-style: italic; font-size: 0.9rem; }
+
+/* ═══════════════════════════════════════════════
+   ADMIN PANEL
+═══════════════════════════════════════════════ */
+.admin-section { margin-bottom: 40px; animation: fadeUp 0.8s 0.5s ease both; }
+.admin-toggle-btn {
+  display: block;
+  margin: 0 auto;
+  background: none;
+  border: none;
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--frame2);
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 8px 20px;
+}
+.admin-toggle-btn:hover { color: var(--muted); }
+
+.admin-box {
+  display: none;
+  max-width: 760px;
+  margin: 10px auto 0;
+  background: linear-gradient(180deg, var(--stone2), var(--stone));
+  border: 1px solid var(--frame);
+  border-top: 2px solid var(--blood);
+  padding: 28px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+.admin-box.open { display: block; animation: fadeIn 0.3s ease; }
+
+.admin-head {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  color: var(--blood2);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--frame);
+}
+
+.login-row { display: flex; gap: 10px; margin-bottom: 8px; }
+.wow-input {
+  flex: 1;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--frame2);
+  color: var(--text2);
+  padding: 9px 14px;
+  font-family: 'Crimson Text', serif;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.wow-input:focus { border-color: var(--gold3); box-shadow: 0 0 0 1px rgba(200,168,75,0.1); }
+.login-err {
+  font-size: 0.8rem;
+  color: var(--blood2);
+  display: none;
+  padding: 6px 0;
+  font-style: italic;
+}
+
+.add-form { display: none; }
+.add-form.unlocked { display: block; }
+.add-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.2fr 1fr auto;
+  gap: 10px;
+  margin-bottom: 16px;
+  align-items: end;
+}
+.field-grp label {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.field-grp input, .field-grp select {
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--frame2);
+  color: var(--text2);
+  padding: 8px 12px;
+  font-family: 'Crimson Text', serif;
+  font-size: 0.95rem;
+  outline: none;
+}
+.field-grp input:focus, .field-grp select:focus { border-color: var(--gold3); }
+.field-grp select option { background: var(--stone); }
+
+.btn-add-char {
+  background: linear-gradient(180deg, rgba(200,168,75,0.2), rgba(200,168,75,0.08));
+  border: 1px solid var(--gold3);
+  color: var(--gold2);
+  padding: 8px 18px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-add-char:hover {
+  background: linear-gradient(180deg, rgba(200,168,75,0.35), rgba(200,168,75,0.15));
+  box-shadow: 0 0 12px rgba(200,168,75,0.2);
+}
+
+.admin-msg {
+  padding: 7px 12px;
+  font-size: 0.82rem;
+  font-style: italic;
+  display: none;
+  margin-bottom: 12px;
+}
+.admin-msg.ok  { background: rgba(30,255,0,0.06);  border-left: 2px solid var(--uncommon); color: var(--uncommon); }
+.admin-msg.err { background: rgba(204,34,0,0.08);  border-left: 2px solid var(--blood2);  color: var(--blood2);  }
+
+.plist-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  border-top: 1px solid var(--frame);
+  padding-top: 14px;
+}
+.plist { display: flex; flex-direction: column; gap: 4px; max-height: 240px; overflow-y: auto; }
+.plist::-webkit-scrollbar { width: 4px; }
+.plist::-webkit-scrollbar-track { background: var(--stone); }
+.plist::-webkit-scrollbar-thumb { background: var(--frame2); }
+.plist-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 12px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(26,46,69,0.4);
+  font-size: 0.88rem;
+}
+.plist-item .pi-name { font-family: 'Cinzel', serif; font-size: 0.85rem; flex: 1; }
+.plist-item .pi-realm { color: var(--muted); font-style: italic; font-size: 0.78rem; }
+.plist-item .pi-spec { color: var(--gold3); font-size: 0.75rem; margin-left: auto; }
+.btn-remove {
+  background: none; border: none; color: var(--blood);
+  cursor: pointer; font-size: 0.9rem; padding: 0 4px;
+  transition: color 0.15s; line-height: 1;
+}
+.btn-remove:hover { color: var(--blood2); }
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+footer {
+  text-align: center;
+  padding: 30px 20px 0;
+  border-top: 1px solid var(--frame);
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-style: italic;
+  letter-spacing: 0.08em;
+  animation: fadeUp 0.8s 0.6s ease both;
+}
+footer strong { color: var(--gold3); font-style: normal; font-family: 'Cinzel', serif; }
+
+/* ═══════════════════════════════════════════════
+   TOOLTIP / TOAST
+═══════════════════════════════════════════════ */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(180deg, var(--stone2), var(--stone));
+  border: 1px solid var(--frame2);
+  border-left: 3px solid var(--gold3);
+  color: var(--gold2);
+  padding: 12px 18px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  z-index: 100;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ═══════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════ */
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.spin-icon {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+  margin-right: 6px;
+}
+
+/* ═══════════════════════════════════════════════
+   CLASS COLORS
+═══════════════════════════════════════════════ */
+.cc-death-knight { color: #C41E3A !important; }
+.cc-demon-hunter { color: #A330C9 !important; }
+.cc-druid        { color: #FF7C0A !important; }
+.cc-evoker       { color: #33937F !important; }
+.cc-hunter       { color: #AAD372 !important; }
+.cc-mage         { color: #3FC7EB !important; }
+.cc-monk         { color: #00FF98 !important; }
+.cc-paladin      { color: #F48CBA !important; }
+.cc-priest       { color: #dddddd !important; }
+.cc-rogue        { color: #FFF468 !important; }
+.cc-shaman       { color: #0070DD !important; }
+.cc-warlock      { color: #8788EE !important; }
+.cc-warrior      { color: #C69B3A !important; }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (max-width: 720px) {
+  .prizes-grid    { grid-template-columns: 1fr; }
+  .info-grid      { grid-template-columns: 1fr; }
+  .info-panel.full{ grid-column: span 1; }
+  .add-grid       { grid-template-columns: 1fr 1fr; }
+  .btn-add-char   { grid-column: span 2; }
+  .ranking-table th:nth-child(6),
+  .ranking-table td:nth-child(6) { display: none; }
+  .rune-ring { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Animated starfield background -->
+<canvas id="canvas-bg"></canvas>
+<div class="bg-overlay"></div>
+<div class="stone-overlay"></div>
+
+<div class="wrap">
+
+<!-- ══════════ HERO ══════════ -->
+<header class="hero">
+  <div class="rune-ring"></div>
+
+  <div class="event-tag">⚔ The Well-Sanguino · Evento de Guild · EU ⚔</div>
+
+  <h1 class="hero-title">
+    <span class="line1">The Well Dungeon</span>
+    <span class="line2">International</span>
+  </h1>
+
+  <p class="hero-tagline">
+    Libre entrada para todo aquel que quiera tener licencia de <em>dar cáncer</em> 🎉<br>
+    <span style="font-size:0.85rem;color:var(--muted);">Es «International» porque si no el Fuké no puede jugar</span>
+  </p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-gem blue"></div>
+    <div class="divider-gem"></div>
+    <div class="divider-gem blue"></div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="meta-strip">
+    <div class="meta-item">
+      <div class="meta-label">Inicio</div>
+      <div class="meta-value">29 Abr 2025</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Fin &amp; cierre inscripción</div>
+      <div class="meta-value">15 Jul 2025</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Objetivo</div>
+      <div class="meta-value">3.400 IO</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Tiempo restante</div>
+      <div class="meta-value arcane" id="countdown">—</div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ PREMIOS ══════════ -->
+<section class="prizes-section">
+  <div class="section-title"><span>⚔ Premios</span></div>
+  <div class="prizes-grid">
+    <div class="prize-card p1 corners">
+      <div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
+      <div class="prize-medal">🥇</div>
+      <div class="prize-place">1.er Puesto</div>
+      <div class="prize-amount">500.000</div>
+      <div class="prize-note">oro</div>
+    </div>
+    <div class="prize-card p2">
+      <div class="prize-medal">🥈</div>
+      <div class="prize-place">2.º Puesto</div>
+      <div class="prize-amount">350.000</div>
+      <div class="prize-note">oro</div>
+    </div>
+    <div class="prize-card p3">
+      <div class="prize-medal">🥉</div>
+      <div class="prize-place">3.er Puesto</div>
+      <div class="prize-amount">150.000</div>
+      <div class="prize-note">oro</div>
+    </div>
+  </div>
+  <div class="prize-split-note">
+    ⚠ En caso de empate de score, el puesto se comparte y el premio se reparte a partes iguales entre los empatados.
+  </div>
+</section>
+
+<!-- ══════════ INFO GRID ══════════ -->
+<div class="info-grid">
+
+  <!-- Objetivos -->
+  <div class="info-panel arcane-top">
+    <div class="panel-title arcane">🔮 Objetivos</div>
+    <div class="objective-item">
+      <div class="obj-icon">🗝️</div>
+      <div class="obj-text">Pushear keys con personajes <strong style="color:var(--gold2)">completamente fresh</strong> usando specs con playstyles distintos a lo que soléis jugar.</div>
+    </div>
+    <div class="objective-item">
+      <div class="obj-icon">🤝</div>
+      <div class="obj-text">Evitar premades en la medida de lo posible para fomentar que juguemos todos juntos.</div>
+    </div>
+    <div class="objective-item">
+      <div class="obj-icon">🎬</div>
+      <div class="obj-text">Sacar todos los clips que se puedan para reírnos todos.</div>
+    </div>
+  </div>
+
+  <!-- Requisitos -->
+  <div class="info-panel gold-top">
+    <div class="panel-title gold">📜 Requisitos</div>
+    <div class="rule-item">
+      <span class="rule-bullet">◆</span>
+      <span>El personaje debe estar en la guild <strong>The Well</strong> <span class="tag epic">ÉPICO</span></span>
+    </div>
+    <div class="rule-item">
+      <span class="rule-bullet">◆</span>
+      <span>Personaje <strong>completamente fresh</strong> al inicio del evento (0 M+ score, 0 kills de raid)</span>
+    </div>
+    <div class="rule-item">
+      <span class="rule-bullet">◆</span>
+      <span>Inscripción abierta desde el 29 de abril hasta el <strong>15 de julio</strong></span>
+    </div>
+  </div>
+
+  <!-- Normas -->
+  <div class="info-panel blood-top full">
+    <div class="panel-title blood">⚠ Normas del evento</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 30px;">
+      <div class="rule-item">
+        <span class="rule-bullet">☠</span>
+        <span><strong>Prohibidos los boosteos</strong> — juego limpio obligatorio</span>
+      </div>
+      <div class="rule-item">
+        <span class="rule-bullet">☠</span>
+        <span><strong>Spec Lock</strong> — solo puedes jugar una spec de la clase que escojas <span class="tag epic">OBLIGATORIO</span></span>
+      </div>
+      <div class="rule-item">
+        <span class="rule-bullet">☠</span>
+        <span>Solo se puede pushear con <strong>gente del evento</strong></span>
+      </div>
+      <div class="rule-item">
+        <span class="rule-bullet">☠</span>
+        <span>Para <strong>raid</strong>: obligatorio ir con mínimo de participantes del evento + PUGs (por definir)</span>
+      </div>
+      <div class="rule-item">
+        <span class="rule-bullet">☠</span>
+        <span>Al acabar el evento debes haber jugado keys con un <strong>mínimo de personas distintas</strong> (por definir)</span>
+      </div>
+      <div class="rule-item">
+        <span class="rule-bullet">☠</span>
+        <span><strong>Clasificación</strong> por score total de M+</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ RANKING ══════════ -->
+<section class="ranking-section">
+  <div class="section-title"><span>⚔ Clasificación</span></div>
+
+  <!-- Goal bar -->
+  <div class="goal-bar-section wow-panel" style="padding:16px 20px;margin-bottom:14px;">
+    <div class="goal-header">
+      <span class="goal-lbl">Mejor puntuación vs. objetivo (3.400 IO)</span>
+      <span class="goal-val" id="goalLabel">— / 3.400</span>
+    </div>
+    <div class="goal-track">
+      <div class="goal-fill" id="goalFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="ranking-controls">
+    <button class="wow-btn active" onclick="setFilter('all',this)">Todos</button>
+    <button class="wow-btn" onclick="setFilter('done',this)">Objetivo alcanzado</button>
+    <button class="wow-btn" onclick="setFilter('prog',this)">En progreso</button>
+    <button class="wow-btn refresh" id="refreshBtn" onclick="loadAllScores()">
+      ↻ Actualizar scores
+    </button>
+  </div>
+
+  <div id="tableWrap">
+    <div class="empty-state">
+      <div class="eq">⚔</div>
+      <strong>Sin participantes todavía</strong>
+      <p>Usa el panel de administración para registrar a los participantes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ ADMIN ══════════ -->
+<div class="admin-section">
+  <div class="section-title"><span>🔧 Admin</span></div>
+  <button class="admin-toggle-btn" onclick="toggleAdmin()" id="adminToggleLbl">▶ Panel de administración</button>
+
+  <div class="admin-box" id="adminBox">
+    <div class="admin-head">⚙ Administración del torneo — contraseña requerida</div>
+
+    <div id="loginBlock">
+      <div class="login-row">
+        <input class="wow-input" type="password" id="adminPass" placeholder="Contraseña..." onkeydown="if(event.key==='Enter')checkPass()" />
+        <button class="wow-btn" onclick="checkPass()">Acceder</button>
+      </div>
+      <div class="login-err" id="loginErr">⚠ Contraseña incorrecta.</div>
+    </div>
+
+    <div class="add-form" id="addForm">
+      <div class="add-grid">
+        <div class="field-grp">
+          <label>Nombre del personaje</label>
+          <input class="wow-input" type="text" id="aName" placeholder="Thrall" />
+        </div>
+        <div class="field-grp">
+          <label>Reino</label>
+          <input class="wow-input" type="text" id="aRealm" placeholder="silvermoon" />
+        </div>
+        <div class="field-grp">
+          <label>Especialización inscrita</label>
+          <input class="wow-input" type="text" id="aSpec" placeholder="Arms Warrior" />
+        </div>
+        <div class="field-grp">
+          <label>Clase</label>
+          <select class="wow-input" id="aClass">
+            <option value="warrior">Guerrero</option>
+            <option value="paladin">Paladín</option>
+            <option value="hunter">Cazador</option>
+            <option value="rogue">Pícaro</option>
+            <option value="priest">Sacerdote</option>
+            <option value="death-knight">Caballero de la Muerte</option>
+            <option value="shaman">Chamán</option>
+            <option value="mage">Mago</option>
+            <option value="warlock">Brujo</option>
+            <option value="monk">Monje</option>
+            <option value="druid">Druida</option>
+            <option value="demon-hunter">Cazador de Demonios</option>
+            <option value="evoker">Evocador</option>
+          </select>
+        </div>
+        <button class="btn-add-char" onclick="addParticipant()">+ Añadir</button>
+      </div>
+
+      <div class="admin-msg" id="adminMsg"></div>
+
+      <div class="plist-title">Participantes registrados (<span id="pCount">0</span>)</div>
+      <div class="plist" id="pList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>Datos proporcionados por la <strong>API de Raider.io</strong> &nbsp;·&nbsp; <strong>The Well-Sanguino</strong> EU &nbsp;·&nbsp; The Well Dungeon International 2025</p>
+</footer>
+
+</div><!-- /wrap -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════ SCRIPTS ══════════ -->
+<script>
+/* ── Canvas starfield ─────────────────────────── */
+(function(){
+  const canvas = document.getElementById('canvas-bg');
+  const ctx    = canvas.getContext('2d');
+  let W, H, stars = [];
+
+  function resize(){
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function initStars(){
+    stars = [];
+    for(let i=0;i<180;i++){
+      stars.push({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        r: Math.random()*1.2+0.2,
+        a: Math.random(),
+        s: Math.random()*0.3+0.05,
+        t: Math.random()*Math.PI*2,
+        // some arcane-tinted
+        blue: Math.random() > 0.7
+      });
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // deep space gradient
+    const grd = ctx.createRadialGradient(W/2,0,0,W/2,H,H*1.2);
+    grd.addColorStop(0,'#060e1a');
+    grd.addColorStop(1,'#020408');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0,0,W,H);
+
+    const now = Date.now()/1000;
+    stars.forEach(s=>{
+      s.a = (Math.sin(now*s.s + s.t)*0.5+0.5)*0.8+0.1;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fillStyle = s.blue
+        ? `rgba(120,180,255,${s.a})`
+        : `rgba(200,168,75,${s.a*0.6})`;
+      ctx.fill();
+    });
+
+    // subtle arcane nebula
+    const grd2 = ctx.createRadialGradient(W*0.7, H*0.3, 0, W*0.7, H*0.3, W*0.4);
+    grd2.addColorStop(0,'rgba(30,60,140,0.06)');
+    grd2.addColorStop(1,'transparent');
+    ctx.fillStyle = grd2;
+    ctx.fillRect(0,0,W,H);
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', ()=>{ resize(); initStars(); });
+  resize(); initStars(); draw();
+})();
+
+/* ── Countdown ────────────────────────────────── */
+function updateCountdown(){
+  const end  = new Date('2025-07-15T23:59:59');
+  const now  = new Date();
+  const diff = end - now;
+  const el   = document.getElementById('countdown');
+  if(diff <= 0){ el.textContent = 'FINALIZADO'; return; }
+  const d = Math.floor(diff/86400000);
+  const h = Math.floor(diff%86400000/3600000);
+  const m = Math.floor(diff%3600000/60000);
+  el.textContent = d+'d '+h+'h '+m+'m';
+}
+setInterval(updateCountdown, 30000);
+updateCountdown();
+
+/* ── State ────────────────────────────────────── */
+const PASS       = 'thewelldown2025';
+const GOAL       = 3400;
+let participants = JSON.parse(localStorage.getItem('twdi_p') || '[]');
+let scores       = JSON.parse(localStorage.getItem('twdi_s') || '{}');
+let filter       = 'all';
+
+/* ── Raider.io fetch ──────────────────────────── */
+async function fetchChar(name, realm){
+  const f = 'mythic_plus_scores_by_season:current,mythic_plus_best_runs,gear,thumbnail_url,class,active_spec_name';
+  try {
+    const r = await fetch(`https://raider.io/api/v1/characters/profile?region=eu&realm=${encodeURIComponent(realm)}&name=${encodeURIComponent(name)}&fields=${f}`);
+    const d = await r.json();
+    return r.ok ? d : null;
+  } catch { return null; }
+}
+
+async function loadAllScores(){
+  if(!participants.length) return;
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin-icon">↻</span>Cargando...';
+
+  for(const p of participants){
+    const data = await fetchChar(p.name, p.realm);
+    if(data){
+      const sa    = data.mythic_plus_scores_by_season;
+      const score = (sa && sa[0]) ? sa[0].scores.all : 0;
+      const runs  = (data.mythic_plus_best_runs || []).slice(0,4).map(r => `+${r.mythic_level} ${r.dungeon.replace(/The |of |the /gi,'').substring(0,12)}`);
+      const ilvl  = data.gear ? data.gear.item_level_equipped : '?';
+      const cls   = (data.class||'').toLowerCase().replace(/\s/g,'-');
+      const spec  = data.active_spec_name || '';
+      const thumb = data.thumbnail_url || '';
+      scores[key(p)] = { score, runs, ilvl, thumb, cls, spec, updated: Date.now() };
+    }
+  }
+  localStorage.setItem('twdi_s', JSON.stringify(scores));
+  renderTable();
+  btn.disabled = false;
+  btn.innerHTML = '↻ Actualizar scores';
+  toast('Puntuaciones actualizadas.');
+}
+
+function key(p){ return p.name.toLowerCase()+'-'+p.realm.toLowerCase(); }
+
+/* ── Score color (WoW item quality style) ─────── */
+function scoreColor(s){
+  if(s >= 3400) return '#FFD700';   // legendary
+  if(s >= 3000) return '#ff6b35';   // orange push
+  if(s >= 2500) return '#a335ee';   // epic
+  if(s >= 2000) return '#0070dd';   // rare
+  if(s >= 1500) return '#1eff00';   // uncommon
+  return '#c8b89a';
+}
+
+/* ── Render table ─────────────────────────────── */
+function renderTable(){
+  const wrap = document.getElementById('tableWrap');
+
+  if(!participants.length){
+    wrap.innerHTML = `<div class="empty-state"><div class="eq">⚔</div><strong>Sin participantes todavía</strong><p>Usa el panel de administración para registrar a los participantes.</p></div>`;
+    document.getElementById('goalLabel').textContent = '— / 3.400';
+    document.getElementById('goalFill').style.width = '0%';
+    return;
+  }
+
+  const sorted = participants.map(p => {
+    const d = scores[key(p)] || {};
+    return { ...p, score: d.score||0, runs: d.runs||[], thumb: d.thumb||'', cls: d.cls||p.class||'warrior', spec: d.spec||p.spec||'' };
+  }).sort((a,b) => b.score - a.score);
+
+  // Goal bar
+  const best = sorted[0]?.score || 0;
+  document.getElementById('goalLabel').textContent = (best||'—') + ' / 3.400';
+  document.getElementById('goalFill').style.width = Math.min(100, best/GOAL*100).toFixed(1)+'%';
+
+  // Filter
+  const list = sorted.filter(p => {
+    if(filter === 'done') return p.score >= GOAL;
+    if(filter === 'prog') return p.score > 0 && p.score < GOAL;
+    return true;
+  });
+
+  if(!list.length){
+    wrap.innerHTML = `<div class="empty-state"><div class="eq">🔍</div><strong>Sin resultados</strong><p>Ningún participante coincide con este filtro.</p></div>`;
+    return;
+  }
+
+  let html = `<table class="ranking-table">
+    <thead><tr>
+      <th class="center">#</th>
+      <th>Personaje</th>
+      <th class="center">Puntuación M+</th>
+      <th>Especialización</th>
+      <th>Mejores mazmorras</th>
+      <th class="center">Estado</th>
+    </tr></thead>
+    <tbody>`;
+
+  list.forEach((p, i) => {
+    const r   = i+1;
+    const rc  = r===1?'rk1':r===2?'rk2':r===3?'rk3':'rkn';
+    const sc  = scoreColor(p.score);
+    const pct = Math.min(100, p.score/GOAL*100).toFixed(0);
+    const trCls = r===1?' class="rank-1-row"':'';
+
+    let st, stCls;
+    if(p.score >= GOAL)   { st='✦ Objetivo alcanzado'; stCls='status-done'; }
+    else if(p.score > 0)  { st=(GOAL-p.score).toLocaleString('es-ES')+' restantes'; stCls='status-prog'; }
+    else                  { st='Sin datos'; stCls='status-wait'; }
+
+    const av = p.thumb
+      ? `<img class="char-thumb" src="${p.thumb}" alt="${p.name}">`
+      : `<div class="char-thumb-ph">⚔</div>`;
+
+    const keys = p.runs.length
+      ? p.runs.map(k => `<span class="key-pill">${k}</span>`).join('')
+      : `<span style="color:var(--muted)">—</span>`;
+
+    // Try to get spec from fetched data, fallback to registered spec
+    const specDisplay = p.spec || p.registeredSpec || '—';
+
+    html += `<tr${trCls} style="animation-delay:${i*0.04}s">
+      <td><div class="rank-badge ${rc}">${r}</div></td>
+      <td><div class="char-cell">
+        ${av}
+        <div>
+          <div class="char-name cc-${p.cls}">${p.name}</div>
+          <div class="char-realm">${p.realm} · EU</div>
+        </div>
+      </div></td>
+      <td>
+        <div class="score-val" style="color:${sc}">${p.score > 0 ? p.score.toLocaleString('es-ES') : '—'}</div>
+        <div class="score-mini-bar"><div class="score-mini-fill" style="width:${pct}%"></div></div>
+      </td>
+      <td><span class="spec-badge">${specDisplay}</span></td>
+      <td class="keys-cell">${keys}</td>
+      <td style="text-align:center"><span class="${stCls}">${st}</span></td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+/* ── Filter ───────────────────────────────────── */
+function setFilter(f, btn){
+  filter = f;
+  document.querySelectorAll('.ranking-controls .wow-btn:not(.refresh)').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+/* ── Admin ────────────────────────────────────── */
+function toggleAdmin(){
+  const box = document.getElementById('adminBox');
+  const lbl = document.getElementById('adminToggleLbl');
+  box.classList.toggle('open');
+  lbl.textContent = box.classList.contains('open') ? '▼ Panel de administración' : '▶ Panel de administración';
+}
+
+function checkPass(){
+  if(document.getElementById('adminPass').value === PASS){
+    document.getElementById('loginBlock').style.display = 'none';
+    document.getElementById('addForm').classList.add('unlocked');
+    renderPList();
+  } else {
+    const e = document.getElementById('loginErr');
+    e.style.display = 'block';
+    setTimeout(()=> e.style.display='none', 2500);
+  }
+}
+
+function addParticipant(){
+  const name  = document.getElementById('aName').value.trim();
+  const realm = (document.getElementById('aRealm').value.trim() || 'silvermoon').toLowerCase();
+  const spec  = document.getElementById('aSpec').value.trim();
+  const cls   = document.getElementById('aClass').value;
+
+  if(!name){ adminMsg('Introduce el nombre del personaje.','err'); return; }
+  if(participants.find(p => p.name.toLowerCase()===name.toLowerCase() && p.realm===realm)){
+    adminMsg('Este personaje ya está registrado.','err'); return;
+  }
+
+  participants.push({ name, realm, registeredSpec: spec, spec, class: cls });
+  localStorage.setItem('twdi_p', JSON.stringify(participants));
+  document.getElementById('aName').value = '';
+  document.getElementById('aSpec').value = '';
+  adminMsg(name + ' añadido correctamente.', 'ok');
+  renderPList();
+  renderTable();
+  toast(name + ' añadido al evento.');
+}
+
+function removeParticipant(i){
+  const p = participants[i];
+  delete scores[key(p)];
+  participants.splice(i, 1);
+  localStorage.setItem('twdi_p', JSON.stringify(participants));
+  localStorage.setItem('twdi_s', JSON.stringify(scores));
+  renderPList();
+  renderTable();
+}
+
+function renderPList(){
+  const el = document.getElementById('pList');
+  const ct = document.getElementById('pCount');
+  ct.textContent = participants.length;
+  if(!participants.length){
+    el.innerHTML = '<div style="color:var(--muted);font-style:italic;font-size:.82rem;padding:8px 0;">Sin participantes todavía.</div>';
+    return;
+  }
+  el.innerHTML = participants.map((p,i) => `
+    <div class="plist-item">
+      <span class="pi-name cc-${p.class||'warrior'}">${p.name}</span>
+      <span class="pi-realm">${p.realm}</span>
+      <span class="pi-spec">${p.registeredSpec || p.spec || '—'}</span>
+      <button class="btn-remove" onclick="removeParticipant(${i})" title="Eliminar">✕</button>
+    </div>
+  `).join('');
+}
+
+function adminMsg(msg, type){
+  const el = document.getElementById('adminMsg');
+  el.textContent = msg;
+  el.className = 'admin-msg ' + type;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display='none', 3000);
+}
+
+/* ── Toast ────────────────────────────────────── */
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+/* ── Init ─────────────────────────────────────── */
+renderTable();
+</script>
+</body>
+</html>
