@@ -405,25 +405,25 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   animation:rowIn .35s ease both}
 @keyframes rowIn{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:none}}
 .rtable tbody tr:hover{background:rgba(200,168,75,.03)}
-.rtable td{padding:14px 16px;vertical-align:middle}
+.rtable td{padding:16px 16px;vertical-align:middle}
 
-.rank-badge{width:28px;height:28px;border-radius:4px;
+.rank-badge{width:32px;height:32px;border-radius:5px;
   display:flex;align-items:center;justify-content:center;
-  font-family:'Cinzel',serif;font-weight:900;font-size:.85rem;margin:0 auto}
+  font-family:'Cinzel',serif;font-weight:900;font-size:1rem;margin:0 auto}
 .rk1{background:linear-gradient(135deg,#ffe060,#c89000);color:#3a1e00;box-shadow:0 0 10px rgba(255,215,0,.3)}
 .rk2{background:linear-gradient(135deg,#c8c8c0,#888880);color:#1a1a18}
 .rk3{background:linear-gradient(135deg,#c87840,#804020);color:#1a0800}
 .rkn{background:rgba(14,10,4,.6);color:var(--muted);border:1px solid var(--fr2)}
 
 .char-cell{display:flex;align-items:center;gap:10px}
-.char-thumb{width:36px;height:36px;border-radius:5px;object-fit:cover;
+.char-thumb{width:46px;height:46px;border-radius:7px;object-fit:cover;
   border:1px solid var(--fr2);background:var(--s2);flex-shrink:0}
 .char-name{font-family:'Cinzel',serif;font-weight:700;font-size:1rem;
   color:var(--text2);line-height:1.2}
 .char-realm{font-family:'Nunito',sans-serif;
   font-size:.76rem;color:var(--muted);margin-top:2px}
-.score-num{font-family:'Cinzel',serif;font-size:1.3rem;font-weight:900;text-align:center}
-.score-bar-w{width:54px;height:3px;background:var(--fr);border-radius:3px;margin:4px auto 0;overflow:hidden}
+.score-num{font-family:'Cinzel',serif;font-size:1.5rem;font-weight:900;text-align:center}
+.score-bar-w{width:64px;height:4px;background:var(--fr);border-radius:3px;margin:5px auto 0;overflow:hidden}
 .score-bar-f{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--crimson2),var(--gold))}
 .spec-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;
   border-radius:100px;background:rgba(14,10,4,.5);border:1px solid var(--fr2);
@@ -1467,13 +1467,24 @@ function renderTable(){
         <td><div class="rank-badge ${rc}">${gr}</div></td>
         <td><div class="char-cell">${av}<div>
           <div class="char-name cc-${p.cls}">${p.name}${isOM(p)?'<span class="badge-om">OFF-META</span>':''}${p.wa_ok?'<span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:.5rem;font-weight:700;background:rgba(200,168,75,.12);color:var(--gold3);border:1px solid rgba(200,168,75,.2);margin-left:4px;vertical-align:middle">WA</span>':''}</div>
-          <div class="char-realm">${p.realm}${p.ilvl?' · '+p.ilvl+' ilvl':''}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap">
+            <span class="char-realm">${p.realm}${p.ilvl?' · '+p.ilvl+' ilvl':''}</span>
+            <a href="https://raider.io/characters/eu/${rSlug(p.realm)}/${encodeURIComponent(p.name)}" target="_blank" rel="noopener"
+              style="font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;
+              color:rgba(200,168,75,.5);text-decoration:none;
+              padding:1px 7px;border-radius:3px;border:1px solid rgba(200,168,75,.15);
+              transition:all .15s;white-space:nowrap"
+              onmouseover="this.style.color='var(--gold2)';this.style.borderColor='rgba(200,168,75,.4)'"
+              onmouseout="this.style.color='rgba(200,168,75,.5)';this.style.borderColor='rgba(200,168,75,.15)'">
+              IO ↗
+            </a>
+          </div>
         </div></div></td>
         <td><div class="score-num" style="color:${sc}">${p.score>0 ? p.score.toLocaleString('es-ES') : '—'}</div>
           <div class="score-bar-w"><div class="score-bar-f" style="width:${pct}%"></div></div></td>
         <td><span class="spec-tag">${p.spec||'—'}</span></td>
         <td style="text-align:center">
-          ${p.best_key?`<span style="font-family:'Cinzel',serif;font-weight:900;font-size:1rem;color:var(--gold2)">+${p.best_key}</span><div style="font-size:.62rem;color:var(--muted)">${p.best_key_dungeon||''}</div>`:'<span style="color:var(--muted)">—</span>'}
+          ${p.best_key?`<span style="font-family:'Cinzel',serif;font-weight:900;font-size:1.2rem;color:var(--gold2)">+${p.best_key}</span><div style="font-size:.72rem;color:var(--muted);margin-top:2px">${p.best_key_dungeon||''}</div>`:'<span style="color:var(--muted)">—</span>'}
         </td>
         <td style="text-align:center;font-size:.82rem;color:var(--muted);font-family:'Nunito',sans-serif">
           ${p.last_run?new Date(p.last_run).toLocaleDateString('es-ES',{day:'2-digit',month:'short'}):'—'}
