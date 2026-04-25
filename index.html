@@ -11,9 +11,9 @@
    VARIABLES — warm WoW/Hearthstone palette
 ══════════════════════════════════════ */
 :root{
-  /* Backgrounds - dark stone, not pitch black */
-  --bg:#0d0f12;--bg2:#111418;--s:#161b22;--s2:#1c2330;
-  --fr:#253040;--fr2:#2e3d52;--fr3:#3d5068;
+  /* Backgrounds - warm Hearthstone stone/parchment */
+  --bg:#1a1208;--bg2:#221608;--s:#2a1e0e;--s2:#342514;
+  --fr:#4a3418;--fr2:#5e4422;--fr3:#7a5830;
 
   /* Gold - warm, not garish */
   --gold:#c9a84c;--gold2:#e8c96a;--gold3:#8a6e28;--golddim:rgba(201,168,76,.09);
@@ -37,15 +37,23 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;
 
 /* Parchment noise */
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E")}
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0.3'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E")}
+
+/* Hearthstone warm vignette */
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 120% 60% at 50% 0%,rgba(80,50,10,.25) 0%,transparent 55%),
+    radial-gradient(ellipse 100% 50% at 0% 50%,rgba(60,30,5,.2) 0%,transparent 45%),
+    radial-gradient(ellipse 100% 50% at 100% 50%,rgba(60,30,5,.2) 0%,transparent 45%),
+    radial-gradient(ellipse 100% 40% at 50% 100%,rgba(10,6,2,.95) 0%,transparent 55%)}
 
 #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
 .bg-overlay{position:fixed;inset:0;z-index:1;pointer-events:none;
   background:
-    radial-gradient(ellipse 100% 55% at 50% 0%,rgba(40,20,8,.75) 0%,transparent 60%),
-    radial-gradient(ellipse 70% 70% at 0% 60%,rgba(14,10,4,.55) 0%,transparent 50%),
-    radial-gradient(ellipse 70% 70% at 100% 60%,rgba(14,10,4,.55) 0%,transparent 50%),
-    radial-gradient(ellipse 100% 45% at 50% 110%,rgba(14,10,4,.9) 0%,transparent 55%)}
+    radial-gradient(ellipse 100% 55% at 50% 0%,rgba(60,35,8,.6) 0%,transparent 60%),
+    radial-gradient(ellipse 70% 70% at 0% 60%,rgba(26,16,6,.5) 0%,transparent 50%),
+    radial-gradient(ellipse 70% 70% at 100% 60%,rgba(26,16,6,.5) 0%,transparent 50%),
+    radial-gradient(ellipse 100% 45% at 50% 110%,rgba(10,6,2,.92) 0%,transparent 55%)}
 .wrap{position:relative;z-index:2}
 
 /* ══════════════════════════════════════
@@ -53,9 +61,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 ══════════════════════════════════════ */
 .topnav{
   position:fixed;top:0;left:0;right:0;z-index:100;height:56px;
-  background:rgba(14,10,4,.97);
+  background:rgba(22,14,6,.97);
   border-bottom:1px solid var(--fr2);
-  box-shadow:0 2px 20px rgba(0,0,0,.5);
+  box-shadow:0 2px 20px rgba(0,0,0,.6),0 1px 0 rgba(200,168,75,.08);
   display:flex;align-items:center;padding:0 22px;gap:14px}
 .nav-logo{display:flex;align-items:center;gap:10px;flex-shrink:0;text-decoration:none}
 .nav-logo-img{width:34px;height:34px;filter:drop-shadow(0 0 6px rgba(200,168,75,.3))}
@@ -251,7 +259,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .wow-panel{
   background:linear-gradient(160deg,var(--s2),var(--s));
   border:1px solid var(--fr2);
-  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  box-shadow:0 4px 24px rgba(0,0,0,.5),inset 0 1px 0 rgba(200,168,75,.07);
   position:relative;overflow:hidden}
 .wow-panel::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent,rgba(201,168,76,.4),transparent)}
@@ -428,12 +436,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
 .rtable-wrap{border-radius:8px;overflow:hidden;border:1px solid var(--fr2)}
 .rtable{width:100%;border-collapse:collapse}
-.rtable thead tr{background:rgba(14,10,4,.92);border-bottom:1px solid var(--fr2)}
+.rtable thead tr{background:rgba(22,14,6,.95);border-bottom:1px solid var(--fr2)}
 .rtable th{padding:13px 16px;font-family:'Cinzel',serif;font-size:.6rem;
   letter-spacing:.12em;text-transform:uppercase;color:var(--gold2);
   text-align:left;font-weight:700;opacity:.85}
 .rtable th.c{text-align:center}
-.rtable tbody tr{border-bottom:1px solid rgba(74,48,16,.35);transition:background .15s;
+.rtable tbody tr{border-bottom:1px solid rgba(90,60,20,.4);transition:background .15s;
   animation:rowIn .35s ease both}
 @keyframes rowIn{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:none}}
 .rtable tbody tr:hover{background:rgba(200,168,75,.03)}
@@ -698,6 +706,10 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
 .ft-sub a{color:var(--gold2);text-decoration:none;opacity:.8}
 .ft-meme{font-family:'Nunito',sans-serif;font-style:italic;
   font-size:.72rem;color:var(--muted);margin-top:8px}
+.ft-legal{font-family:'Nunito',sans-serif;font-size:.65rem;
+  color:var(--muted);margin-top:14px;line-height:1.6;
+  max-width:700px;margin-left:auto;margin-right:auto;
+  padding-top:12px;border-top:1px solid var(--fr)}
 
 /* Toast */
 .toast{position:fixed;bottom:20px;right:20px;z-index:999;
@@ -1066,6 +1078,16 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
   </div>
   <div class="ft-sub">The Well-Sanguino EU &nbsp;·&nbsp; <a href="https://raider.io" target="_blank">Raider.io</a> &amp; <a href="https://wowaudit.com" target="_blank">WoW Audit</a></div>
   <div class="ft-meme">Sida colectiva desde 2026 · The Well-Sanguino EU</div>
+
+  <div class="ft-legal">
+    World of Warcraft®, Hearthstone® y toda la música, imágenes y contenido relacionado son propiedad de
+    <a href="https://www.blizzard.com" target="_blank" rel="noopener" style="color:var(--gold3);text-decoration:none">Blizzard Entertainment, Inc.</a>
+    Esta web es un proyecto de fans sin ánimo de lucro, creado para promover la comunidad de World of Warcraft.
+    No está afiliada ni patrocinada por Blizzard Entertainment.
+    La música utilizada pertenece a la banda sonora oficial de Hearthstone® © Blizzard Entertainment.
+    Uso bajo los términos de la
+    <a href="https://www.blizzard.com/en-us/legal/2749df07-2b53-4990-b75e-b21fdd3987e2/blizzard-entertainment-fan-site-kit-agreement" target="_blank" rel="noopener" style="color:var(--gold3);text-decoration:none">Fan Site Policy de Blizzard</a>.
+  </div>
 </footer>
 </div><!-- /wrap -->
 
@@ -1153,6 +1175,95 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Ambient music -->
+<audio id="ambientAudio" loop preload="none">
+  <source src="Hearthstone_Soundtrack_OST_-_Full_Themes.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Music controls -->
+<div style="position:fixed;bottom:22px;left:22px;z-index:998;
+  display:flex;align-items:center;gap:8px">
+
+  <!-- Play/Pause -->
+  <div id="musicBtn" onclick="toggleMusic()" title="Música ambiente"
+    style="width:40px;height:40px;border-radius:50%;
+    background:rgba(26,16,6,.94);border:1px solid var(--fr2);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:all .2s;font-size:1rem;
+    box-shadow:0 4px 14px rgba(0,0,0,.5)">🎵</div>
+
+  <!-- Mute/Unmute -->
+  <div id="muteBtn" onclick="toggleMute()" title="Silenciar"
+    style="width:40px;height:40px;border-radius:50%;
+    background:rgba(26,16,6,.94);border:1px solid var(--fr2);
+    display:none;align-items:center;justify-content:center;
+    cursor:pointer;transition:all .2s;font-size:1rem;
+    box-shadow:0 4px 14px rgba(0,0,0,.5)">🔊</div>
+
+  <!-- Volume slider -->
+  <div id="volWrap" style="display:none;align-items:center;gap:6px;
+    background:rgba(26,16,6,.94);border:1px solid var(--fr2);
+    border-radius:20px;padding:6px 12px;box-shadow:0 4px 14px rgba(0,0,0,.5)">
+    <span style="font-size:.7rem;color:var(--muted2)">Vol</span>
+    <input id="volSlider" type="range" min="0" max="100" value="20"
+      oninput="setVolume(this.value)"
+      style="width:80px;accent-color:var(--gold);cursor:pointer">
+  </div>
+</div>
+
+<script>
+let musicPlaying=false, muted=false;
+const audio=document.getElementById('ambientAudio');
+audio.volume=0.20;
+
+function toggleMusic(){
+  const btn=document.getElementById('musicBtn');
+  const muteBtn=document.getElementById('muteBtn');
+  const volWrap=document.getElementById('volWrap');
+  if(musicPlaying){
+    audio.pause();
+    btn.innerHTML='🎵';
+    btn.style.borderColor='var(--fr2)';
+    muteBtn.style.display='none';
+    volWrap.style.display='none';
+    musicPlaying=false;
+  }else{
+    audio.play().then(()=>{
+      btn.innerHTML='⏸';
+      btn.style.borderColor='var(--gold3)';
+      muteBtn.style.display='flex';
+      volWrap.style.display='flex';
+      musicPlaying=true;
+    }).catch(()=>{
+      toast('⚠ Pulsa primero en la página para activar el audio');
+    });
+  }
+}
+
+function toggleMute(){
+  const btn=document.getElementById('muteBtn');
+  if(muted){
+    audio.muted=false;
+    btn.innerHTML='🔊';
+    btn.style.borderColor='var(--fr2)';
+    muted=false;
+  }else{
+    audio.muted=true;
+    btn.innerHTML='🔇';
+    btn.style.borderColor='var(--gold3)';
+    muted=true;
+  }
+}
+
+function setVolume(v){
+  audio.volume=v/100;
+  audio.muted=false;
+  muted=false;
+  document.getElementById('muteBtn').innerHTML='🔊';
+  document.getElementById('muteBtn').style.borderColor='var(--fr2)';
+}
+</script>
 
 <script>
 /* ── SUPABASE ── */
@@ -1257,8 +1368,8 @@ async function loadParticipants(){
   }
   function draw(){
     x.clearRect(0,0,W,H);
-    const g=x.createRadialGradient(W/2,H*.35,0,W/2,H*.35,H);
-    g.addColorStop(0,'#160e04'); g.addColorStop(1,'#0a0602');
+    const g=x.createRadialGradient(W/2,H*.3,0,W/2,H*.3,H);
+    g.addColorStop(0,'#261808'); g.addColorStop(0.5,'#1a1006'); g.addColorStop(1,'#0e0a04');
     x.fillStyle=g; x.fillRect(0,0,W,H);
     const now=Date.now()/1000;
     pts.forEach(p=>{
