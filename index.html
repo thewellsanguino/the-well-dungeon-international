@@ -1622,6 +1622,12 @@ async function loadAll(){
   if(!parts.length){toast('⚠ Añade participantes primero'); return;}
   const btn=document.getElementById('refreshBtn'), icon=document.getElementById('rIcon');
   btn.disabled=true; icon.classList.add('spin');
+  toast('⏳ Forzando actualización desde Raider.io + WoW Audit…');
+
+  // Llamar al Worker para forzar refresh de todos los datos
+  try{
+    await fetch('https://wowaudit-proxy.thewellsanguino.workers.dev/refresh');
+  }catch(e){ console.warn('Worker refresh:', e.message); }
 
   const [rioRes, waMap] = await Promise.all([
     Promise.all(parts.map(p=>fetchRIO(p.name, p.realm))),
