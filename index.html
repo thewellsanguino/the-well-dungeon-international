@@ -18,8 +18,8 @@
   /* Gold - warm, not garish */
   --gold:#c9a84c;--gold2:#e8c96a;--gold3:#8a6e28;--golddim:rgba(201,168,76,.09);
 
-  /* Text - high contrast, cream not white (reduces eye strain) */
-  --text:#c8cdd6;--text2:#dde2ea;--muted:#5a6878;--muted2:#7a8898;
+  /* Text - accessible contrast ratios */
+  --text:#c8cdd6;--text2:#e8ecf0;--muted:#8a9aaa;--muted2:#a0b0be;
 
   /* Accent colors */
   --green:#38a169;--green2:#4ec98a;--greendim:rgba(56,161,105,.1);
@@ -62,7 +62,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .nav-logo-name{font-family:'Cinzel',serif;font-size:.88rem;font-weight:900;
   color:var(--gold2);letter-spacing:.07em;line-height:1}
 .nav-logo-sub{font-family:'Nunito',sans-serif;font-size:.6rem;
-  color:var(--muted2);line-height:1;margin-top:2px;letter-spacing:.05em}
+  color:var(--muted2);line-height:1;margin-top:2px;letter-spacing:.05em;opacity:.9}
 .nav-div{width:1px;height:26px;background:var(--fr2);flex-shrink:0}
 .nav-links{display:flex;gap:2px;flex:1}
 .nav-link{padding:6px 13px;border-radius:6px;
@@ -132,10 +132,10 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   0%,100%{filter:drop-shadow(0 0 16px rgba(200,168,75,.38)) drop-shadow(0 4px 10px rgba(0,0,0,.8))}
   50%{filter:drop-shadow(0 0 30px rgba(200,168,75,.65)) drop-shadow(0 4px 10px rgba(0,0,0,.8))}}
 .guild-eyebrow{display:inline-flex;align-items:center;gap:8px;margin-top:10px;
-  padding:4px 16px;background:rgba(200,168,75,.06);
-  border:1px solid rgba(200,168,75,.18);border-radius:4px;
-  font-family:'Cinzel',serif;font-size:.58rem;font-weight:600;
-  letter-spacing:.2em;color:var(--gold3);text-transform:uppercase}
+  padding:5px 18px;background:rgba(200,168,75,.08);
+  border:1px solid rgba(200,168,75,.22);border-radius:4px;
+  font-family:'Cinzel',serif;font-size:.62rem;font-weight:700;
+  letter-spacing:.15em;color:var(--gold2);text-transform:uppercase;opacity:.9}
 .live-dot{width:5px;height:5px;background:var(--gold);border-radius:50%;
   box-shadow:0 0 5px var(--gold);animation:ldot 2s ease infinite}
 @keyframes ldot{0%,100%{opacity:1}50%{opacity:.25}}
@@ -151,8 +151,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   filter:drop-shadow(0 0 18px rgba(200,168,75,.45))}
 .ht3{display:block;font-size:.26em;letter-spacing:.55em;
-  font-family:'Cinzel',serif;font-weight:400;color:var(--gold3);
-  -webkit-text-fill-color:var(--gold3);margin-top:8px}
+  font-family:'Cinzel',serif;font-weight:600;color:var(--gold2);
+  -webkit-text-fill-color:var(--gold2);margin-top:8px;opacity:.7}
 
 /* Ornament */
 .orn{display:flex;align-items:center;gap:12px;justify-content:center;
@@ -166,12 +166,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
 /* Tagline */
 .hero-tagline{font-family:'Nunito',sans-serif;font-style:italic;
-  font-size:clamp(.95rem,2.2vw,1.15rem);color:rgba(200,210,220,.65);
+  font-size:clamp(.95rem,2.2vw,1.15rem);color:rgba(200,215,230,.82);
   line-height:1.75;max-width:660px;margin:0 auto;
   animation:fadeDown .7s .2s ease both}
 .hero-tagline em{color:var(--gold2);font-style:normal;font-weight:700}
 .hero-tagline .hn{display:block;font-size:.78em;margin-top:6px;
-  color:rgba(200,210,220,.38)}
+  color:rgba(200,215,230,.52)}
 
 /* ── Hearthstone-style meme badges ── */
 .meme-row{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;
@@ -213,8 +213,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   color:var(--gold2);line-height:1;text-shadow:var(--sh-gold)}
 .cd-num.bump{animation:cdB .22s ease}
 @keyframes cdB{0%{transform:scale(1.12);opacity:.5}100%{transform:none;opacity:1}}
-.cd-unit{font-family:'Cinzel',serif;font-size:.48rem;font-weight:600;
-  letter-spacing:.2em;text-transform:uppercase;color:rgba(200,168,75,.28);margin-top:6px}
+.cd-unit{font-family:'Cinzel',serif;font-size:.5rem;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;color:rgba(220,190,90,.55);margin-top:6px}
 .cd-sep{font-family:'Cinzel',serif;font-size:2rem;font-weight:900;
   color:rgba(200,168,75,.14);display:flex;align-items:center;padding-bottom:11px}
 
@@ -225,9 +225,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   box-shadow:0 4px 14px rgba(0,0,0,.4)}
 .ms-cell{padding:10px 17px;background:rgba(22,14,6,.75);text-align:center}
 .ms-cell+.ms-cell{border-left:1px solid var(--fr)}
-.ms-lbl{font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.2em;
-  text-transform:uppercase;color:var(--muted);margin-bottom:3px}
-.ms-val{font-family:'Cinzel',serif;font-size:.88rem;font-weight:700;color:var(--gold2)}
+.ms-lbl{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--muted2);margin-bottom:3px}
+.ms-val{font-family:'Cinzel',serif;font-size:.9rem;font-weight:700;color:var(--gold2)}
 .ms-val.g{color:var(--green2)}
 
 /* ══════════════════════════════════════
@@ -240,7 +240,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:linear-gradient(135deg,var(--gold2),var(--gold));
   transform:rotate(45deg);flex-shrink:0;box-shadow:var(--sh-gold)}
 .sec-title{font-family:'Cinzel',serif;font-size:.95rem;font-weight:900;
-  color:var(--gold2);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+  color:var(--gold2);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
+  text-shadow:0 0 12px rgba(201,168,76,.2)}
 .sec-line{flex:1;height:1px;background:linear-gradient(90deg,var(--fr2),transparent)}
 .sec-badge{font-family:'Cinzel',serif;font-size:.55rem;font-weight:700;
   letter-spacing:.1em;text-transform:uppercase;padding:3px 11px;border-radius:3px;
@@ -293,11 +294,10 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
 .p-emoji{font-size:2.1rem;display:block;margin-bottom:7px;
   filter:drop-shadow(0 2px 6px rgba(0,0,0,.7))}
-.p-name{font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;
+.p-name{font-family:'Cinzel',serif;font-size:.72rem;font-weight:700;
   color:var(--text2);line-height:1.4;letter-spacing:.03em}
-/* Guild meme subtitle */
-.p-meme{font-family:'IM Fell English',serif;font-style:italic;
-  font-size:.62rem;color:var(--muted);margin-top:5px;line-height:1.3}
+.p-meme{font-family:'Nunito',sans-serif;font-style:italic;
+  font-size:.7rem;color:var(--muted2);margin-top:5px;line-height:1.3}
 
 /* Card bottom — Hearthstone mana gem area */
 .p-bottom{padding:11px 13px;border-top:1px solid var(--fr);
@@ -325,8 +325,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   display:flex;align-items:center;justify-content:space-between}
 .pt-lbl{font-family:'Cinzel',serif;font-size:.72rem;font-weight:700;
   color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
-.pt-sub{font-family:'IM Fell English',serif;font-style:italic;
-  font-size:.7rem;color:rgba(216,200,160,.22);margin-top:3px}
+.pt-sub{font-family:'Nunito',sans-serif;font-style:italic;
+  font-size:.72rem;color:var(--muted2);margin-top:3px}
 .pt-amount{font-family:'Cinzel Decorative',serif;font-size:1.9rem;
   font-weight:900;color:var(--gold2);text-shadow:var(--sh-gold)}
 
@@ -341,10 +341,10 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   animation:fadeUp .5s ease both}
 .gq-icon{font-size:1.4rem;flex-shrink:0}
 .gq-text{font-family:'Nunito',sans-serif;font-style:italic;
-  font-size:1rem;color:rgba(236,224,192,.85);line-height:1.5;font-weight:600}
+  font-size:1rem;color:var(--text2);line-height:1.5;font-weight:600}
 .gq-text em{color:var(--gold2);font-style:normal;font-weight:800}
-.gq-author{font-family:'Nunito',sans-serif;font-size:.72rem;
-  color:rgba(200,168,75,.55);margin-top:4px;letter-spacing:.04em;font-style:italic}
+.gq-author{font-family:'Nunito',sans-serif;font-size:.76rem;
+  color:var(--muted2);margin-top:5px;letter-spacing:.04em;font-style:italic}
 
 /* ══════════════════════════════════════
    TABS
@@ -353,8 +353,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   border:1px solid var(--fr);border-radius:10px;padding:4px;
   margin-bottom:18px;flex-wrap:wrap}
 .tab-btn{flex:1;min-width:100px;padding:10px 13px;border:none;border-radius:7px;
-  background:transparent;font-family:'Cinzel',serif;font-size:.62rem;font-weight:700;
-  letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  background:transparent;font-family:'Cinzel',serif;font-size:.64rem;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--muted2);
   cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
 .tab-btn:hover{color:var(--text);background:var(--golddim)}
 .tab-btn.active{
@@ -368,10 +368,41 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
    RANKING
 ══════════════════════════════════════ */
 .rank-controls{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+
+/* ── RANKING SUB-TABS ── */
+.rank-subtabs{display:flex;gap:2px;margin-bottom:16px;
+  background:rgba(255,255,255,.03);border:1px solid var(--fr);
+  border-radius:8px;padding:3px;width:fit-content}
+.rank-subtab{padding:7px 20px;border-radius:6px;border:none;
+  background:transparent;color:var(--muted2);
+  font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;gap:7px}
+.rank-subtab:hover{color:var(--text2);background:rgba(255,255,255,.04)}
+.rank-subtab.active{background:linear-gradient(160deg,var(--s2),var(--s));
+  color:var(--gold2);border:1px solid var(--fr2);
+  box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.rank-subtab .stab-badge{font-size:.55rem;padding:1px 6px;border-radius:3px;
+  font-family:'Nunito',sans-serif;font-weight:800;letter-spacing:.04em}
+.stb-rio{background:rgba(201,168,76,.12);color:var(--gold2);border:1px solid rgba(201,168,76,.2)}
+.stb-wa{background:rgba(59,130,196,.12);color:var(--blue2);border:1px solid rgba(59,130,196,.2)}
+.wa-coming-soon{
+  border-radius:8px;padding:40px 20px;text-align:center;
+  background:rgba(59,130,196,.04);border:1px solid rgba(59,130,196,.1);
+  border-style:dashed}
+.wa-cs-icon{font-size:2.4rem;margin-bottom:12px}
+.wa-cs-title{font-family:'Cinzel',serif;font-size:.9rem;font-weight:900;
+  color:var(--blue2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.wa-cs-sub{font-family:'Nunito',sans-serif;font-size:.86rem;
+  color:var(--muted2);line-height:1.6;max-width:500px;margin:0 auto}
+.wa-cs-url{display:inline-block;margin-top:14px;padding:7px 16px;
+  border-radius:6px;background:rgba(59,130,196,.1);border:1px solid rgba(59,130,196,.2);
+  font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;
+  color:var(--blue2);letter-spacing:.06em;word-break:break-all}
 .chip{padding:5px 13px;border-radius:5px;border:1px solid var(--fr2);
-  background:rgba(14,10,4,.5);color:var(--muted);
-  font-family:'Cinzel',serif;font-size:.58rem;font-weight:600;
-  letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:all .18s}
+  background:rgba(255,255,255,.04);color:var(--muted2);
+  font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .18s}
 .chip:hover{border-color:var(--gold3);color:var(--gold)}
 .chip.active{background:var(--golddim);border-color:var(--gold3);color:var(--gold2)}
 .refresh-btn{margin-left:auto;padding:6px 14px;border-radius:5px;
@@ -386,8 +417,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
 .goal-card{border-radius:8px;padding:14px 18px;margin-bottom:12px}
 .goal-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
-.goal-lbl{font-family:'Cinzel',serif;font-size:.58rem;font-weight:700;
-  letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.goal-lbl{font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted2)}
 .goal-val{font-family:'Cinzel',serif;font-size:.88rem;font-weight:700;color:var(--gold)}
 .goal-track{height:6px;background:rgba(0,0,0,.5);border-radius:100px;
   border:1px solid var(--fr);overflow:hidden}
@@ -398,9 +429,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .rtable-wrap{border-radius:8px;overflow:hidden;border:1px solid var(--fr2)}
 .rtable{width:100%;border-collapse:collapse}
 .rtable thead tr{background:rgba(14,10,4,.92);border-bottom:1px solid var(--fr2)}
-.rtable th{padding:13px 16px;font-family:'Cinzel',serif;font-size:.58rem;
-  letter-spacing:.15em;text-transform:uppercase;color:var(--gold2);
-  text-align:left;font-weight:700;opacity:.7}
+.rtable th{padding:13px 16px;font-family:'Cinzel',serif;font-size:.6rem;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--gold2);
+  text-align:left;font-weight:700;opacity:.85}
 .rtable th.c{text-align:center}
 .rtable tbody tr{border-bottom:1px solid rgba(74,48,16,.35);transition:background .15s;
   animation:rowIn .35s ease both}
@@ -422,7 +453,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .char-name{font-family:'Cinzel',serif;font-weight:700;font-size:1rem;
   color:var(--text2);line-height:1.2;letter-spacing:.02em}
 .char-realm{font-family:'Nunito',sans-serif;
-  font-size:.76rem;color:var(--muted2);margin-top:2px}
+  font-size:.77rem;color:var(--muted2);margin-top:2px;font-weight:600}
 .score-num{font-family:'Cinzel',serif;font-size:1.5rem;font-weight:900;text-align:center}
 .score-bar-w{width:64px;height:4px;background:var(--fr);border-radius:3px;margin:5px auto 0;overflow:hidden}
 .score-bar-f{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--crimson2),var(--gold))}
@@ -430,12 +461,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   border-radius:100px;background:rgba(255,255,255,.05);border:1px solid var(--fr2);
   font-family:'Cinzel',serif;font-size:.74rem;font-weight:600;color:var(--text2)}
 .badge-om{display:inline-block;padding:2px 7px;border-radius:3px;
-  font-family:'Cinzel',serif;font-size:.54rem;font-weight:700;letter-spacing:.06em;
-  background:rgba(106,74,138,.15);color:#b090d8;border:1px solid rgba(106,74,138,.28);
+  font-family:'Cinzel',serif;font-size:.58rem;font-weight:700;letter-spacing:.06em;
+  background:rgba(124,92,191,.18);color:#c0a0f0;border:1px solid rgba(124,92,191,.35);
   margin-left:4px;vertical-align:middle}
 .key-pills{display:flex;flex-wrap:wrap;gap:3px}
-.key-pill{padding:2px 7px;border-radius:3px;font-family:'Cinzel',serif;font-size:.62rem;
-  font-weight:700;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);
+.key-pill{padding:3px 8px;border-radius:3px;font-family:'Cinzel',serif;font-size:.65rem;
+  font-weight:700;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);
   color:var(--gold2)}
 .st-done{color:var(--green2);font-weight:800;font-size:.68rem;font-family:'Cinzel',serif}
 .st-prog{color:var(--gold);font-weight:800;font-size:.68rem;font-family:'Cinzel',serif}
@@ -449,9 +480,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .div-card{border-radius:8px;padding:13px 18px;margin-top:10px;
   display:flex;align-items:center;gap:14px}
 .div-icon{font-size:1.7rem;flex-shrink:0}
-.div-lbl{font-family:'Cinzel',serif;font-weight:700;font-size:.82rem;
+.div-lbl{font-family:'Cinzel',serif;font-weight:700;font-size:.84rem;
   color:var(--text2);letter-spacing:.04em;text-transform:uppercase}
-.div-sub{font-family:'IM Fell English',serif;font-style:italic;font-size:.72rem;color:var(--muted);margin-top:2px}
+.div-sub{font-family:'Nunito',sans-serif;font-style:italic;font-size:.78rem;color:var(--muted2);margin-top:3px}
 .div-bar{height:5px;background:rgba(0,0,0,.4);border-radius:100px;overflow:hidden;
   margin-top:8px;border:1px solid var(--fr)}
 .div-fill{height:100%;border-radius:100px;
@@ -582,12 +613,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .rb-red  .rb-title{color:#c06060}
 .rb-green .rb-title{color:var(--green2)}
 .rule-li{display:flex;gap:9px;align-items:flex-start;margin-bottom:10px;
-  font-size:.88rem;line-height:1.6;color:var(--text2)}
+  font-size:.9rem;line-height:1.6;color:var(--text2)}
 .rule-li strong{color:var(--gold2);font-weight:800}
 .meme-note{margin-top:12px;padding:9px 12px;border-radius:5px;
-  background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.12);
+  background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.15);
   font-family:'Nunito',sans-serif;font-style:italic;
-  font-size:.76rem;color:rgba(230,200,100,.55)}
+  font-size:.78rem;color:rgba(230,210,120,.75)}
 
 /* ══════════════════════════════════════
    MODALS
@@ -608,7 +639,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .modal-title{font-family:'Cinzel',serif;font-size:1.05rem;font-weight:900;
   color:var(--gold2);margin-bottom:5px;text-align:center;letter-spacing:.07em}
 .modal-sub{font-family:'Nunito',sans-serif;
-  font-size:.8rem;color:var(--muted2);text-align:center;margin-bottom:20px;line-height:1.5}
+  font-size:.82rem;color:var(--muted2);text-align:center;margin-bottom:20px;line-height:1.5;font-weight:600}
 .modal-close{position:absolute;top:12px;right:14px;background:none;border:none;
   color:var(--muted);font-size:.95rem;cursor:pointer;padding:4px 8px;
   border-radius:5px;font-family:'Cinzel',serif;transition:color .15s}
@@ -662,11 +693,11 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
 .ft-logo{width:30px;height:30px;filter:drop-shadow(0 0 5px rgba(200,168,75,.28))}
 .ft-name{font-family:'Cinzel Decorative',serif;font-size:.82rem;font-weight:900;
   color:var(--gold2);letter-spacing:.07em}
-.ft-sub{font-family:'IM Fell English',serif;font-style:italic;
-  font-size:.7rem;color:var(--muted)}
-.ft-sub a{color:var(--gold3);text-decoration:none}
-.ft-meme{font-family:'IM Fell English',serif;font-style:italic;
-  font-size:.68rem;color:var(--fr2);margin-top:8px}
+.ft-sub{font-family:'Nunito',sans-serif;
+  font-size:.75rem;color:var(--muted2)}
+.ft-sub a{color:var(--gold2);text-decoration:none;opacity:.8}
+.ft-meme{font-family:'Nunito',sans-serif;font-style:italic;
+  font-size:.72rem;color:var(--muted);margin-top:8px}
 
 /* Toast */
 .toast{position:fixed;bottom:20px;right:20px;z-index:999;
@@ -878,22 +909,37 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
 
   <!-- RANKING -->
   <div class="tab-panel active" id="tab-ranking">
-    <div class="goal-card wow-panel" style="border-radius:8px">
-      <div class="goal-row">
-        <span class="goal-lbl">🎯 Mejor Score M+ actual</span>
-        <span class="goal-val" id="goalLabel">— IO</span>
-      </div>
-      <div class="goal-track"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
-    </div>
-    <div class="rank-controls" style="margin-top:12px">
-      <button class="chip active" onclick="setFilter('all',this)">Todos</button>
-      <button class="chip" onclick="setFilter('done',this)">✅ 3.400+</button>
-      <button class="chip" onclick="setFilter('prog',this)">🔥 En progreso</button>
-      <button class="chip" onclick="setFilter('offmeta',this)">🧪 Off-meta</button>
-      <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">
-        <span id="rIcon">↻</span> Actualizar
+
+    <!-- Sub-tabs: Raider.io vs WoW Audit -->
+    <div class="rank-subtabs">
+      <button class="rank-subtab active" id="stab-rio" onclick="switchRankSubtab('rio',this)">
+        📊 Raider.io
+        <span class="stab-badge stb-rio">Live</span>
+      </button>
+      <button class="rank-subtab" id="stab-wa" onclick="switchRankSubtab('wa',this)">
+        📋 WoW Audit
+        <span class="stab-badge stb-wa">Próximamente</span>
       </button>
     </div>
+
+    <!-- Raider.io panel -->
+    <div id="rank-panel-rio">
+      <div class="goal-card wow-panel" style="border-radius:8px">
+        <div class="goal-row">
+          <span class="goal-lbl">🎯 Mejor Score M+ actual</span>
+          <span class="goal-val" id="goalLabel">— IO</span>
+        </div>
+        <div class="goal-track"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
+      </div>
+      <div class="rank-controls" style="margin-top:12px">
+        <button class="chip active" onclick="setFilter('all',this)">Todos</button>
+        <button class="chip" onclick="setFilter('done',this)">✅ 3.400+</button>
+        <button class="chip" onclick="setFilter('prog',this)">🔥 En progreso</button>
+        <button class="chip" onclick="setFilter('offmeta',this)">🧪 Off-meta</button>
+        <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">
+          <span id="rIcon">↻</span> Actualizar
+        </button>
+      </div>
     <div class="rtable-wrap">
       <div id="tableWrap">
         <div class="empty-state">
@@ -903,14 +949,48 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
         </div>
       </div>
     </div>
-    <div class="div-card wow-panel" id="divCard" style="display:none;border-radius:8px;margin-top:10px">
-      <div class="div-icon" id="divIcon">🎲</div>
-      <div style="flex:1">
-        <div class="div-lbl" id="divLabel"></div>
-        <div class="div-sub" id="divSub"></div>
-        <div class="div-bar"><div class="div-fill" id="divFill" style="width:0%"></div></div>
+      <div class="div-card wow-panel" id="divCard" style="display:none;border-radius:8px;margin-top:10px">
+        <div class="div-icon" id="divIcon">🎲</div>
+        <div style="flex:1">
+          <div class="div-lbl" id="divLabel"></div>
+          <div class="div-sub" id="divSub"></div>
+          <div class="div-bar"><div class="div-fill" id="divFill" style="width:0%"></div></div>
+        </div>
       </div>
-    </div>
+    </div><!-- /rank-panel-rio -->
+
+    <!-- WoW Audit panel -->
+    <div id="rank-panel-wa" style="display:none">
+      <div class="wa-coming-soon">
+        <div class="wa-cs-icon">⚙️</div>
+        <div class="wa-cs-title">WoW Audit — Pendiente de configuración</div>
+        <div class="wa-cs-sub">
+          El proxy está desplegado y listo. En cuanto el admin de WoW Audit configure el webhook,
+          aquí aparecerán datos de ilvl, composición, asistencia y progreso de raid en tiempo real.
+          <br><br>
+          El admin debe añadir esta URL en <strong>WoW Audit → TWDI → Settings → Integrations → Webhook</strong>:
+        </div>
+        <div class="wa-cs-url">https://wowaudit-proxy.thewellsanguino.workers.dev</div>
+        <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <a href="https://wowaudit.com/eu/sanguino/the-well/twdi" target="_blank" rel="noopener"
+            style="padding:8px 18px;border-radius:6px;background:rgba(59,130,196,.12);
+            border:1px solid rgba(59,130,196,.25);color:var(--blue2);
+            font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;
+            text-decoration:none;letter-spacing:.06em">
+            Ir a WoW Audit →
+          </a>
+          <button onclick="loadWAData()" 
+            style="padding:8px 18px;border-radius:6px;background:rgba(201,168,76,.1);
+            border:1px solid rgba(201,168,76,.2);color:var(--gold2);
+            font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;
+            cursor:pointer;letter-spacing:.06em">
+            🔄 Comprobar datos
+          </button>
+        </div>
+        <div id="waDataPreview" style="margin-top:16px"></div>
+      </div>
+    </div><!-- /rank-panel-wa -->
+
   </div>
 
   <!-- CLIPS -->
@@ -974,7 +1054,7 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
   </div>
 
   <div style="text-align:center;margin-top:60px">
-    <button class="nav-btn ghost" style="opacity:.18;font-size:.56rem;letter-spacing:.15em" onclick="openAdminPanel()">⚙ ADMIN</button>
+    <button class="nav-btn ghost" style="opacity:.45;font-size:.6rem;letter-spacing:.12em" onclick="openAdminPanel()">⚙ Admin</button>
   </div>
 
 </div><!-- /main -->
@@ -1014,6 +1094,28 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
     <div class="form-field"><label class="f-lbl">Contraseña (mín. 6 caracteres)</label><input class="wow-input" type="password" id="regPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"/></div>
     <button class="modal-btn mb-gold" onclick="doRegister()">Crear cuenta</button>
     <div class="modal-link">¿Ya tienes cuenta? <a onclick="switchModal('registerModal','loginModal')">Iniciar sesión</a></div>
+  </div>
+</div>
+
+<!-- Admin password modal -->
+<div class="modal-overlay" id="adminPwdModal">
+  <div class="modal" style="max-width:340px">
+    <button class="modal-close" onclick="closeModal('adminPwdModal')">✕</button>
+    <div class="modal-title">🔐 Admin</div>
+    <div class="modal-sub">Introduce la contraseña de administrador</div>
+    <div id="adminPwdErr" style="display:none;padding:8px 12px;border-radius:6px;
+      background:rgba(192,58,58,.1);border:1px solid rgba(192,58,58,.2);
+      color:var(--crimson2);font-size:.8rem;font-weight:700;
+      text-align:center;margin-bottom:12px;font-family:'Nunito',sans-serif">
+      Contraseña incorrecta
+    </div>
+    <div class="form-field">
+      <input class="wow-input" type="password" id="adminPwdInput"
+        placeholder="••••••••••••"
+        onkeydown="if(event.key==='Enter')checkAdminPwd()"
+        autofocus/>
+    </div>
+    <button class="modal-btn mb-gold" onclick="checkAdminPwd()">Entrar</button>
   </div>
 </div>
 
@@ -1558,6 +1660,54 @@ function setFilter(f,btn){
   renderTable();
 }
 
+function switchRankSubtab(tab, btn){
+  document.querySelectorAll('.rank-subtab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('rank-panel-rio').style.display = tab==='rio' ? 'block' : 'none';
+  document.getElementById('rank-panel-wa').style.display  = tab==='wa'  ? 'block' : 'none';
+  if(tab==='wa') loadWAData();
+}
+
+async function loadWAData(){
+  const preview = document.getElementById('waDataPreview');
+  preview.innerHTML='<div style="color:var(--muted2);font-size:.8rem;font-family:Nunito,sans-serif">Comprobando datos de WoW Audit…</div>';
+  try{
+    const r = await fetch('https://wowaudit-proxy.thewellsanguino.workers.dev');
+    const data = await r.json();
+    if(!data.length){
+      preview.innerHTML='<div style="color:var(--muted2);font-size:.8rem;font-family:Nunito,sans-serif;font-style:italic">Sin datos todavía. El webhook no se ha configurado aún.</div>';
+      return;
+    }
+    // Si hay datos mostrar tabla básica
+    preview.innerHTML=`
+      <div style="margin-top:4px;color:var(--green2);font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700">
+        ✅ ${data.length} personajes recibidos de WoW Audit
+      </div>
+      <div style="margin-top:12px;border-radius:8px;overflow:hidden;border:1px solid var(--fr2)">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:rgba(0,0,0,.4)">
+            <th style="padding:9px 14px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--gold2);text-align:left;opacity:.8">Personaje</th>
+            <th style="padding:9px 14px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--gold2);text-align:left;opacity:.8">Realm</th>
+            <th style="padding:9px 14px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--gold2);text-align:left;opacity:.8">Spec</th>
+            <th style="padding:9px 14px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--gold2);text-align:center;opacity:.8">ilvl</th>
+            <th style="padding:9px 14px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--gold2);text-align:left;opacity:.8">Actualizado</th>
+          </tr></thead>
+          <tbody>
+            ${data.map(c=>`<tr style="border-top:1px solid var(--fr)">
+              <td style="padding:9px 14px;font-family:'Cinzel',serif;font-weight:700;font-size:.85rem;color:var(--text2)">${esc(c.name||'—')}</td>
+              <td style="padding:9px 14px;font-size:.78rem;color:var(--muted2)">${esc(c.realm||'—')}</td>
+              <td style="padding:9px 14px;font-size:.78rem;color:var(--text)">${esc(c.spec||'—')}</td>
+              <td style="padding:9px 14px;font-family:'Cinzel',serif;font-weight:700;color:var(--gold2);text-align:center">${c.ilvl_equipped||c.ilvl||'—'}</td>
+              <td style="padding:9px 14px;font-size:.72rem;color:var(--muted2)">${c.updated_at?new Date(c.updated_at).toLocaleDateString('es-ES'):'—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }catch(e){
+    preview.innerHTML=`<div style="color:var(--crimson2);font-size:.8rem;font-family:'Nunito',sans-serif">Error: ${e.message}</div>`;
+  }
+}
+
 /* ── CLIPS ── */
 async function renderClips(){
   const{data:clips}=await sb.from('clips').select('*').eq('approved',true).order('votes_count',{ascending:false});
@@ -1693,11 +1843,32 @@ async function sendMessage(){
 }
 
 /* ── ADMIN ── */
+const ADMIN_PWD = 'thewelldown2025';
+let adminUnlocked = false;
+
 function openAdminPanel(){
-  if(CP && (CP.is_admin || CP.username==='TheWell')){
+  if(adminUnlocked){
     openModal('adminModal');
     renderAdminP(); loadAdminUsers(); loadAdminClips();
-  } else { toast('⚠ Acceso denegado'); }
+    return;
+  }
+  openModal('adminPwdModal');
+}
+
+function checkAdminPwd(){
+  const input = document.getElementById('adminPwdInput').value;
+  if(input === ADMIN_PWD){
+    adminUnlocked = true;
+    closeModal('adminPwdModal');
+    document.getElementById('adminPwdInput').value='';
+    document.getElementById('adminPwdErr').style.display='none';
+    openModal('adminModal');
+    renderAdminP(); loadAdminUsers(); loadAdminClips();
+  } else {
+    document.getElementById('adminPwdErr').style.display='block';
+    document.getElementById('adminPwdInput').value='';
+    document.getElementById('adminPwdInput').focus();
+  }
 }
 function renderAdminP(){
   const el=document.getElementById('pListAdmin');
