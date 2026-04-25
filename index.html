@@ -244,9 +244,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .main{max-width:1140px;margin:0 auto;padding:40px 20px 100px}
 
 .sec-h{display:flex;align-items:center;gap:12px;margin-bottom:22px;margin-top:60px}
-.sec-gem{width:12px;height:12px;
+.sec-gem{width:11px;height:11px;
   background:linear-gradient(135deg,var(--gold2),var(--gold));
-  transform:rotate(45deg);flex-shrink:0;box-shadow:var(--sh-gold)}
+  transform:rotate(45deg);flex-shrink:0;
+  box-shadow:0 0 8px rgba(201,168,76,.4)}
 .sec-title{font-family:'Cinzel',serif;font-size:.95rem;font-weight:900;
   color:var(--gold2);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
   text-shadow:0 0 12px rgba(201,168,76,.2)}
@@ -267,18 +268,20 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 /* ══════════════════════════════════════
    HEARTHSTONE PRIZE CARDS
 ══════════════════════════════════════ */
-.prizes-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.prizes-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;
+  position:relative}
 @media(max-width:900px){.prizes-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:580px){.prizes-grid{grid-template-columns:repeat(2,1fr)}}
 
 .prize-card{
-  border-radius:14px;overflow:hidden;cursor:pointer;position:relative;
-  background:var(--s);border:1px solid var(--fr2);
-  box-shadow:0 6px 18px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.03);
+  border-radius:14px;overflow:visible;cursor:pointer;position:relative;
+  background:linear-gradient(180deg,var(--s2),var(--s));
+  border:1px solid var(--fr2);
+  box-shadow:0 6px 18px rgba(0,0,0,.4),inset 0 1px 0 rgba(200,168,75,.06);
   transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s,border-color .2s}
 .prize-card:hover{transform:translateY(-11px) rotate(.6deg);
-  box-shadow:0 22px 44px rgba(0,0,0,.6),var(--sh-gold);
-  border-color:var(--gold3)}
+  box-shadow:0 22px 44px rgba(0,0,0,.5),0 0 30px rgba(200,168,75,.15);
+  border-color:var(--gold2)}
 .prize-card:hover .p-tip{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
 
 /* Hearthstone rarity gem top line */
@@ -292,25 +295,25 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 /* Hearthstone art area */
 .p-top{padding:20px 13px 12px;text-align:center;position:relative;overflow:hidden}
 .p-top::after{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(200,168,75,.05),transparent);
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(200,168,75,.08),transparent);
   pointer-events:none}
-.pc-1 .p-top{background:linear-gradient(160deg,#1e1600,#120e00)}
-.pc-2 .p-top{background:linear-gradient(160deg,#120a1e,#080416)}
-.pc-3 .p-top{background:linear-gradient(160deg,#0a1600,#060e00)}
-.pc-4 .p-top{background:linear-gradient(160deg,#08101e,#040a18)}
-.pc-5 .p-top{background:linear-gradient(160deg,#1a1000,#100a00)}
+.pc-1 .p-top{background:linear-gradient(160deg,#2e2208,#1e1604)}
+.pc-2 .p-top{background:linear-gradient(160deg,#1e1430,#120a1e)}
+.pc-3 .p-top{background:linear-gradient(160deg,#162208,#0e1804)}
+.pc-4 .p-top{background:linear-gradient(160deg,#0e1830,#080e1e)}
+.pc-5 .p-top{background:linear-gradient(160deg,#281a04,#1a1002)}
 
 .p-emoji{font-size:2.1rem;display:block;margin-bottom:7px;
   filter:drop-shadow(0 2px 6px rgba(0,0,0,.7))}
-.p-name{font-family:'Cinzel',serif;font-size:.72rem;font-weight:700;
-  color:var(--text2);line-height:1.4;letter-spacing:.03em}
+.p-name{font-family:'Cinzel',serif;font-size:.76rem;font-weight:700;
+  color:var(--parch2,#e8d8b0);line-height:1.4;letter-spacing:.03em}
 .p-meme{font-family:'Nunito',sans-serif;font-style:italic;
-  font-size:.7rem;color:var(--muted2);margin-top:5px;line-height:1.3}
+  font-size:.72rem;color:var(--muted2);margin-top:5px;line-height:1.3}
 
 /* Card bottom — Hearthstone mana gem area */
-.p-bottom{padding:11px 13px;border-top:1px solid var(--fr);
+.p-bottom{padding:12px 14px;border-top:1px solid var(--fr2);
   display:flex;align-items:center;justify-content:space-between;
-  background:rgba(0,0,0,.15)}
+  background:rgba(0,0,0,.2)}
 .p-amount{font-family:'Cinzel',serif;font-size:1.15rem;font-weight:900}
 .pc-1 .p-amount{color:var(--gold2);text-shadow:var(--sh-gold)}
 .pc-2 .p-amount{color:#b088ff}
@@ -318,16 +321,22 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .pc-4 .p-amount{color:var(--blue2)}
 .pc-5 .p-amount{color:#d08840}
 
-.p-tip{position:absolute;bottom:calc(100%+8px);left:50%;
-  transform:translateX(-50%) translateY(6px);width:215px;
-  background:rgba(14,10,4,.98);border:1px solid var(--fr2);
-  color:var(--text);font-family:'IM Fell English',serif;font-style:italic;
-  font-size:.76rem;line-height:1.55;padding:10px 13px;
-  border-radius:9px;pointer-events:none;opacity:0;transition:all .2s;z-index:20;
-  box-shadow:0 8px 24px rgba(0,0,0,.7)}
+.p-tip{position:absolute;bottom:calc(100%+10px);left:50%;
+  transform:translateX(-50%) translateY(6px);width:240px;
+  background:linear-gradient(160deg,#3a2810,#2a1c08);
+  border:1px solid var(--gold3);
+  color:#e8d8b0;font-family:'Nunito',sans-serif;
+  font-size:.78rem;line-height:1.55;padding:12px 14px;
+  border-radius:10px;pointer-events:none;opacity:0;transition:all .2s;z-index:20;
+  box-shadow:0 8px 28px rgba(0,0,0,.6),inset 0 1px 0 rgba(200,168,75,.15);
+  word-wrap:break-word;overflow-wrap:break-word;
+  white-space:normal;text-align:left}
+.p-tip::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  border-radius:10px 10px 0 0;
+  background:linear-gradient(90deg,transparent,var(--gold3),transparent)}
 .p-tip::after{content:'';position:absolute;top:100%;left:50%;
-  transform:translateX(-50%);border:6px solid transparent;
-  border-top-color:rgba(14,10,4,.98)}
+  transform:translateX(-50%);border:7px solid transparent;
+  border-top-color:#2a1c08}
 
 .prizes-total{margin-top:12px;border-radius:10px;padding:17px 22px;
   display:flex;align-items:center;justify-content:space-between}
@@ -357,11 +366,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 /* ══════════════════════════════════════
    TABS
 ══════════════════════════════════════ */
-.tabs-nav{display:flex;gap:3px;background:rgba(14,10,4,.6);
+.tabs-nav{display:flex;gap:3px;background:rgba(26,18,8,.7);
   border:1px solid var(--fr);border-radius:10px;padding:4px;
   margin-bottom:18px;flex-wrap:wrap}
 .tab-btn{flex:1;min-width:100px;padding:10px 13px;border:none;border-radius:7px;
-  background:transparent;font-family:'Cinzel',serif;font-size:.64rem;font-weight:700;
+  background:transparent;font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;
   letter-spacing:.05em;text-transform:uppercase;color:var(--muted2);
   cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
 .tab-btn:hover{color:var(--text);background:var(--golddim)}
@@ -863,28 +872,28 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
 
   <div class="prizes-grid">
     <div class="prize-card pc-1">
-      <div class="p-tip">Key más alta del evento. Empate → quien la completó antes. Date prisa.</div>
-      <div class="p-top"><span class="p-emoji">🗝️</span><div class="p-name">Key Más Alta</div><div class="p-meme">"gg ez" — nadie, nunca, jamás</div></div>
+      <div class="p-tip">Key más alta del evento. Empate → quien la completó antes.</div>
+      <div class="p-top"><span class="p-emoji">🗝️</span><div class="p-name">Key Más Alta</div><div class="p-meme">"gg ez" — nadie. Jamás.</div></div>
       <div class="p-bottom"><div class="p-amount">250.000</div><span>🥇</span></div>
     </div>
     <div class="prize-card pc-2">
-      <div class="p-tip">Key más alta con compo off-meta. Badge exclusivo incluido. Off-meta, pero con dignidad.</div>
-      <div class="p-top"><span class="p-emoji">🧪</span><div class="p-name">Key Off-Meta</div><div class="p-meme">"Meta? No la conozco."</div></div>
+      <div class="p-tip">Key más alta con compo off-meta. Badge exclusivo. Con dignidad.</div>
+      <div class="p-top"><span class="p-emoji">🧪</span><div class="p-name">Key Off-Meta</div><div class="p-meme">"El meta es una mentira."</div></div>
       <div class="p-bottom"><div class="p-amount">250.000</div><span>✨</span></div>
     </div>
     <div class="prize-card pc-3">
-      <div class="p-tip">El clip más votado con Raik™. El gato de los Doritos decide quién gana.</div>
-      <div class="p-top"><span class="p-emoji">🎥</span><div class="p-name">Mejor Clip</div><div class="p-meme">"Timer: 0:03 — clip it."</div></div>
+      <div class="p-tip">El clip más votado. El gato de los Doritos decide.</div>
+      <div class="p-top"><span class="p-emoji">🎥</span><div class="p-name">Mejor Clip</div><div class="p-meme">"Clips o no existió."</div></div>
       <div class="p-bottom"><div class="p-amount">75.000</div><span>🏆</span></div>
     </div>
     <div class="prize-card pc-4">
-      <div class="p-tip">Mayor variedad de jugadores distintos en tu top 8 de keys. Fomenta que juguemos todos.</div>
-      <div class="p-top"><span class="p-emoji">👥</span><div class="p-name">Mayor Variedad</div><div class="p-meme">"variedad o castigo"</div></div>
+      <div class="p-tip">Mayor variedad de jugadores en tu top 8. Juega con todos.</div>
+      <div class="p-top"><span class="p-emoji">👥</span><div class="p-name">Mayor Variedad</div><div class="p-meme">"No premades. En serio."</div></div>
       <div class="p-bottom"><div class="p-amount">25.000</div><span>🌟</span></div>
     </div>
     <div class="prize-card pc-5">
-      <div class="p-tip">50k × dungeon +12 en menor tiempo. 8 dungeons = 400k. El timer no perdona.</div>
-      <div class="p-top"><span class="p-emoji">⚡</span><div class="p-name">Speed Run ×8</div><div class="p-meme">"sida colectiva %"</div></div>
+      <div class="p-tip">50k por dungeon +12 en menor tiempo. 8 dungeons = 400k.</div>
+      <div class="p-top"><span class="p-emoji">⚡</span><div class="p-name">Speed Run ×8</div><div class="p-meme">"El timer no negocia."</div></div>
       <div class="p-bottom"><div class="p-amount">400.000</div><span>⏱️</span></div>
     </div>
   </div>
@@ -1178,7 +1187,7 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
 
 <!-- Ambient music -->
 <audio id="ambientAudio" loop preload="none">
-  <source src="Hearthstone_Soundtrack_OST_-_Full_Themes.mp3" type="audio/mpeg">
+  <source src="Hearthstone%20Soundtrack%20OST%20-%20Full%20Themes.mp3" type="audio/mpeg">
 </audio>
 
 <!-- Music controls -->
@@ -1216,6 +1225,23 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
 let musicPlaying=false, muted=false;
 const audio=document.getElementById('ambientAudio');
 audio.volume=0.20;
+
+// Autoplay en primer click/interacción
+function tryAutoplay(){
+  if(!musicPlaying){
+    audio.play().then(()=>{
+      musicPlaying=true;
+      document.getElementById('musicBtn').innerHTML='⏸';
+      document.getElementById('musicBtn').style.borderColor='var(--gold3)';
+      document.getElementById('muteBtn').style.display='flex';
+      document.getElementById('volWrap').style.display='flex';
+    }).catch(()=>{});
+  }
+  document.removeEventListener('click', tryAutoplay);
+  document.removeEventListener('keydown', tryAutoplay);
+}
+document.addEventListener('click', tryAutoplay);
+document.addEventListener('keydown', tryAutoplay);
 
 function toggleMusic(){
   const btn=document.getElementById('musicBtn');
