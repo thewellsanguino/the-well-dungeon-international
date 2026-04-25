@@ -1362,8 +1362,10 @@ async function sbGet(table, params=''){
   try{const r=await fetch(`${SB_URL}/rest/v1/${table}?${params}`,{headers:SB_H});
     return r.ok?r.json():[];}catch{return [];}
 }
-async function sbUpsert(table, data){
-  const h={...SB_H,'Prefer':'resolution=merge-duplicates,return=minimal'};
+async function sbUpsert(table, data, conflict='name,realm'){
+  const h={...SB_H,
+    'Prefer':'resolution=merge-duplicates,return=minimal',
+    'on_conflict':conflict};
   return fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:h,body:JSON.stringify(data)});
 }
 async function sbDel(table, filter){
@@ -1507,19 +1509,19 @@ async function updateNav(){
     CU=session.user;
     const{data}=await sb.from('profiles').select('*').eq('id',CU.id).single();
     CP=data;
-    document.getElementById('navGuest').style.display='none';
-    document.getElementById('navLogged').style.display='flex';
+    if(document.getElementById('navGuest')) document.getElementById('navGuest').style.display='none';
+    if(document.getElementById('navLogged')) document.getElementById('navLogged').style.display='flex';
     document.getElementById('navUname').textContent=data?.username||'Usuario';
     document.getElementById('navInit').textContent=(data?.username||'?')[0].toUpperCase();
     if(data?.is_admin) document.getElementById('ddAdmin').style.display='flex';
-    document.getElementById('chatLocked').style.display='none';
-    document.getElementById('chatInputLogged').style.display='flex';
+    if(document.getElementById('chatLocked')) document.getElementById('chatLocked').style.display='none';
+    if(document.getElementById('chatInputLogged')) document.getElementById('chatInputLogged').style.display='flex';
     subscribeChat();
   } else {
-    document.getElementById('navGuest').style.display='flex';
-    document.getElementById('navLogged').style.display='none';
-    document.getElementById('chatLocked').style.display='block';
-    document.getElementById('chatInputLogged').style.display='none';
+    if(document.getElementById('navGuest')) document.getElementById('navGuest').style.display='flex';
+    if(document.getElementById('navLogged')) document.getElementById('navLogged').style.display='none';
+    if(document.getElementById('chatLocked')) document.getElementById('chatLocked').style.display='block';
+    if(document.getElementById('chatInputLogged')) document.getElementById('chatInputLogged').style.display='none';
   }
   renderClips();
 }
@@ -1926,33 +1928,8 @@ async function voteClip(clipId, btn){
 }
 
 /* ── CHAT ── */
-async function loadMessages(){
-  const{data}=await sb.from('messages').select('*').order('created_at',{ascending:true}).limit(100);
-  renderMessages(data||[]);
-}
-function renderMessages(msgs){
-  const el=document.getElementById('chatMessages');
-  if(!msgs.length){
-    el.innerHTML='<div style="text-align:center;color:var(--muted);font-style:italic;font-size:.76rem;padding:16px;font-family:\'IM Fell English\',serif">Sin mensajes · ¡Rompe el hielo, o la key!</div>';
-    return;
-  }
-  el.innerHTML=msgs.map(m=>{
-    const own=CU && m.user_id===CU.id;
-    const isAdmin=m.username==='TheWell';
-    const time=new Date(m.created_at).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-    return`<div class="chat-msg${own?' own':''}">
-      <div class="msg-av">${(m.username||'?')[0].toUpperCase()}</div>
-      <div class="msg-bub">
-        <div>
-          <span class="msg-user${isAdmin?' au':''}">${esc(m.username)}${isAdmin?' 👑':''}</span>
-          <span class="msg-time">${time}</span>
-        </div>
-        <div class="msg-text">${esc(m.content)}</div>
-      </div>
-    </div>`;
-  }).join('');
-  el.scrollTop=el.scrollHeight;
-}
+async function loadMessages(){ /* chat removed */ }
+function renderMessages(msgs){ /* chat removed */ }
 function subscribeChat(){
   if(chatSub) return;
   chatSub=sb.channel('chat-twdi').on('postgres_changes',
