@@ -968,7 +968,7 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
       </button>
       <button class="rank-subtab" id="stab-wa" onclick="switchRankSubtab('wa',this)">
         📋 WoW Audit
-        <span class="stab-badge stb-wa">Próximamente</span>
+        <span class="stab-badge stb-wa">Live</span>
       </button>
     </div>
 
@@ -1010,33 +1010,26 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
 
     <!-- WoW Audit panel -->
     <div id="rank-panel-wa" style="display:none">
-      <div class="wa-coming-soon">
-        <div class="wa-cs-icon">⚙️</div>
-        <div class="wa-cs-title">WoW Audit — Pendiente de configuración</div>
-        <div class="wa-cs-sub">
-          El proxy está desplegado y listo. En cuanto el admin de WoW Audit configure el webhook,
-          aquí aparecerán datos de ilvl, composición, asistencia y progreso de raid en tiempo real.
-          <br><br>
-          El admin debe añadir esta URL en <strong>WoW Audit → TWDI → Settings → Integrations → Webhook</strong>:
-        </div>
-        <div class="wa-cs-url">https://wowaudit-proxy.thewellsanguino.workers.dev</div>
-        <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2)">Fuente: WoW Audit · Actualiza cada 2h</span>
           <a href="https://wowaudit.com/eu/sanguino/the-well/twdi" target="_blank" rel="noopener"
-            style="padding:8px 18px;border-radius:6px;background:rgba(59,130,196,.12);
-            border:1px solid rgba(59,130,196,.25);color:var(--blue2);
-            font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;
-            text-decoration:none;letter-spacing:.06em">
-            Ir a WoW Audit →
+            style="font-size:.65rem;font-family:'Cinzel',serif;font-weight:700;color:var(--blue2);text-decoration:none;
+            padding:3px 10px;border-radius:4px;background:rgba(59,130,196,.1);border:1px solid rgba(59,130,196,.2)">
+            WoW Audit ↗
           </a>
-          <button onclick="loadWAData()" 
-            style="padding:8px 18px;border-radius:6px;background:rgba(201,168,76,.1);
-            border:1px solid rgba(201,168,76,.2);color:var(--gold2);
-            font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;
-            cursor:pointer;letter-spacing:.06em">
-            🔄 Comprobar datos
-          </button>
         </div>
-        <div id="waDataPreview" style="margin-top:16px"></div>
+        <button onclick="loadWAData()" id="waRefreshBtn"
+          style="padding:6px 14px;border-radius:6px;background:var(--golddim);border:1px solid var(--gold3);
+          color:var(--gold2);font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;
+          cursor:pointer;letter-spacing:.06em">
+          🔄 Actualizar
+        </button>
+      </div>
+      <div id="waDataPreview">
+        <div style="text-align:center;padding:40px;color:var(--muted2);font-family:'Nunito',sans-serif;font-size:.9rem">
+          Cargando datos de WoW Audit…
+        </div>
       </div>
     </div><!-- /rank-panel-wa -->
 
@@ -1916,44 +1909,120 @@ function switchRankSubtab(tab, btn){
   document.getElementById('rank-panel-wa').style.display  = tab==='wa'  ? 'block' : 'none';
   if(tab==='wa') loadWAData();
 }
+// Auto-load WA on first visit
+let waLoaded=false;
+const _origSwitch = switchRankSubtab;
 
 async function loadWAData(){
   const preview = document.getElementById('waDataPreview');
-  preview.innerHTML='<div style="color:var(--muted2);font-size:.8rem;font-family:Nunito,sans-serif">Comprobando datos de WoW Audit…</div>';
+  const btn = document.getElementById('waRefreshBtn');
+  if(btn) btn.textContent = '⏳ Cargando…';
+  preview.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted2);font-family:Nunito,sans-serif">Cargando datos de WoW Audit…</div>';
+
   try{
-    const r = await fetch('https://wowaudit-proxy.thewellsanguino.workers.dev');
-    const data = await r.json();
-    if(!data.length){
-      preview.innerHTML='<div style="color:var(--muted2);font-size:.8rem;font-family:Nunito,sans-serif;font-style:italic">Sin datos todavía. El webhook no se ha configurado aún.</div>';
+    const r = await fetch('https://wowaudit-proxy.thewellsanguino.workers.dev/wa');
+    const json = await r.json();
+
+    if(!Array.isArray(json) || json.length < 2){
+      preview.innerHTML = '<div style="color:var(--crimson2);font-family:Nunito,sans-serif;font-size:.85rem;text-align:center;padding:20px">Sin datos disponibles del proxy WoW Audit.</div>';
+      if(btn) btn.textContent = '🔄 Actualizar';
       return;
     }
-    // Si hay datos mostrar tabla básica
-    preview.innerHTML=`
-      <div style="margin-top:4px;color:var(--green2);font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700">
-        ✅ ${data.length} personajes recibidos de WoW Audit
-      </div>
-      <div style="margin-top:12px;border-radius:8px;overflow:hidden;border:1px solid var(--fr2)">
-        <table style="width:100%;border-collapse:collapse">
-          <thead><tr style="background:rgba(0,0,0,.4)">
-            <th style="padding:9px 14px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--gold2);text-align:left;opacity:.8">Personaje</th>
-            <th style="padding:9px 14px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--gold2);text-align:left;opacity:.8">Realm</th>
-            <th style="padding:9px 14px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--gold2);text-align:left;opacity:.8">Spec</th>
-            <th style="padding:9px 14px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--gold2);text-align:center;opacity:.8">ilvl</th>
-            <th style="padding:9px 14px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--gold2);text-align:left;opacity:.8">Actualizado</th>
-          </tr></thead>
-          <tbody>
-            ${data.map(c=>`<tr style="border-top:1px solid var(--fr)">
-              <td style="padding:9px 14px;font-family:'Cinzel',serif;font-weight:700;font-size:.85rem;color:var(--text2)">${esc(c.name||'—')}</td>
-              <td style="padding:9px 14px;font-size:.78rem;color:var(--muted2)">${esc(c.realm||'—')}</td>
-              <td style="padding:9px 14px;font-size:.78rem;color:var(--text)">${esc(c.spec||'—')}</td>
-              <td style="padding:9px 14px;font-family:'Cinzel',serif;font-weight:700;color:var(--gold2);text-align:center">${c.ilvl_equipped||c.ilvl||'—'}</td>
-              <td style="padding:9px 14px;font-size:.72rem;color:var(--muted2)">${c.updated_at?new Date(c.updated_at).toLocaleDateString('es-ES'):'—'}</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>`;
+
+    // Parse headers and rows
+    const hdrs = json[0];
+    const nameIdx    = hdrs.indexOf('Name') !== -1 ? hdrs.indexOf('Name') : 0;
+    const classIdx   = hdrs.findIndex(h => h === 'Class');
+    const realmIdx   = hdrs.findIndex(h => h === 'Realm');
+    const ilvlIdx    = hdrs.findIndex(h => h === 'Item level' || h === 'item_level');
+    const rankIdx    = hdrs.findIndex(h => h === 'Rank');
+    const scoreIdx   = hdrs.findIndex(h => h === 'm+_score');
+    const weekMIdx   = hdrs.findIndex(h => h === 'week_mythic_dungeons');
+    const seasMIdx   = hdrs.findIndex(h => h === 'season_mythic_dungeons');
+    const weekHighIdx= hdrs.findIndex(h => h === 'weekly_highest_m+');
+    const seasHighIdx= hdrs.findIndex(h => h === 'season_highest_m+');
+    const upgradeIdx = hdrs.findIndex(h => h === 'total_upgrades_missing');
+    const socketsIdx = hdrs.findIndex(h => h === 'empty_sockets');
+    const raidHIdx   = hdrs.findIndex(h => h === 'raids_heroic');
+    const raidMIdx   = hdrs.findIndex(h => h === 'raids_mythic');
+    const roleIdx    = hdrs.findIndex(h => h === 'role');
+    const lastModIdx = hdrs.findIndex(h => h === 'blizzard_last_modified');
+
+    const rows = json.slice(1).filter(r => r[nameIdx]);
+
+    // Sort by ilvl desc
+    rows.sort((a,b) => (parseFloat(b[ilvlIdx])||0) - (parseFloat(a[ilvlIdx])||0));
+
+    const th = (t) => `<th style="padding:9px 12px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold2);text-align:center;opacity:.8;white-space:nowrap">${t}</th>`;
+    const td = (t, style='') => `<td style="padding:9px 12px;text-align:center;font-size:.82rem;font-family:'Nunito',sans-serif;color:var(--text2);${style}">${t||'—'}</td>`;
+    const tdl = (t, style='') => `<td style="padding:9px 12px;text-align:left;font-size:.82rem;font-family:'Nunito',sans-serif;color:var(--text2);${style}">${t||'—'}</td>`;
+
+    const roleIcon = (r) => r==='Tank'?'🛡️':r==='Heal'?'💚':r==='Melee'?'⚔️':r==='Ranged'?'🏹':'❓';
+
+    const tableRows = rows.map(r => {
+      const name    = r[nameIdx] || '';
+      const cls     = r[classIdx] || '';
+      const realm   = r[realmIdx] || '';
+      const ilvl    = parseFloat(r[ilvlIdx]) || 0;
+      const rank    = r[rankIdx] || '';
+      const score   = r[scoreIdx] || 0;
+      const weekM   = r[weekMIdx] || 0;
+      const seasM   = r[seasMIdx] || 0;
+      const weekH   = r[weekHighIdx] || 0;
+      const seasH   = r[seasHighIdx] || 0;
+      const upgrades= r[upgradeIdx] || 0;
+      const sockets = r[socketsIdx] || 0;
+      const raidH   = r[raidHIdx] || '0/0';
+      const raidM   = r[raidMIdx] || '0/0';
+      const role    = r[roleIdx] || '';
+      const clsSlug = cls.toLowerCase().replace(/\s+/g,'-');
+
+      const upgradeColor = upgrades > 5 ? 'color:var(--crimson2);font-weight:800' : upgrades > 0 ? 'color:#f0a040;font-weight:700' : 'color:var(--green2);font-weight:700';
+      const socketColor  = sockets > 0 ? 'color:var(--crimson2);font-weight:800' : 'color:var(--green2);font-weight:700';
+      const ilvlColor    = ilvl >= 230 ? 'color:var(--gold2);font-weight:900;font-family:Cinzel,serif' : ilvl >= 200 ? 'color:var(--text2);font-weight:700;font-family:Cinzel,serif' : 'color:var(--muted2);font-family:Cinzel,serif';
+
+      return '<tr style="border-top:1px solid var(--fr)">' +
+        `<td style="padding:9px 12px;text-align:left">` +
+          `<div class="char-name cc-${clsSlug}" style="font-size:.88rem">${esc(name)}</div>` +
+          `<div style="font-size:.68rem;color:var(--muted2);margin-top:1px">${esc(realm)} · ${esc(rank)}</div>` +
+        '</td>' +
+        `<td style="padding:9px 12px;text-align:center;font-size:.75rem;color:var(--muted2)">${roleIcon(role)} ${esc(role)}</td>` +
+        td(ilvl.toFixed(1), ilvlColor) +
+        td(score > 0 ? score : '—', score > 0 ? 'color:var(--gold2);font-weight:800;font-family:Cinzel,serif' : '') +
+        td(weekM > 0 ? weekM : '—') +
+        td(seasM > 0 ? seasM : '—') +
+        td(weekH > 0 ? '+'+weekH : '—') +
+        td(seasH > 0 ? '+'+seasH : '—') +
+        td(upgrades, upgradeColor) +
+        td(sockets, socketColor) +
+        td(raidH) +
+        td(raidM) +
+      '</tr>';
+    }).join('');
+
+    const lastUpdate = json[0][0] ? json[0][0] : '';
+
+    preview.innerHTML =
+      `<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">` +
+        `<span style="color:var(--green2);font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700">✅ ${rows.length} personajes · WoW Audit</span>` +
+        `<span style="font-size:.72rem;color:var(--muted2);font-family:'Nunito',sans-serif">Última sync: ${esc(lastUpdate)}</span>` +
+      `</div>` +
+      `<div style="border-radius:8px;overflow-x:auto;border:1px solid var(--fr2)">` +
+        `<table style="width:100%;border-collapse:collapse;min-width:800px">` +
+          `<thead><tr style="background:rgba(0,0,0,.5)">` +
+            th('Personaje') + th('Rol') + th('ilvl') + th('Score M+') +
+            th('Keys/sem') + th('Keys/temp') + th('+Alta/sem') + th('+Alta/temp') +
+            th('Upgrades⚠') + th('Sockets⚠') + th('Raid H') + th('Raid M') +
+          `</tr></thead>` +
+          `<tbody>${tableRows}</tbody>` +
+        `</table>` +
+      `</div>`;
+
+    if(btn) btn.textContent = '🔄 Actualizar';
+
   }catch(e){
-    preview.innerHTML=`<div style="color:var(--crimson2);font-size:.8rem;font-family:'Nunito',sans-serif">Error: ${e.message}</div>`;
+    preview.innerHTML = `<div style="color:var(--crimson2);font-family:Nunito,sans-serif;font-size:.85rem;padding:16px">Error: ${e.message}</div>`;
+    if(btn) btn.textContent = '🔄 Actualizar';
   }
 }
 
@@ -1999,22 +2068,34 @@ async function renderClips(){
             <img class="raik-img" src="${RAIK}" alt="Raik"/>
             <span class="raik-count">${cl.votes_count}</span>
           </button>`;
-      h+=`<div class="clip-card">
-        ${isTop?'<div class="clip-top">🏆 Top Clip</div>':''}
-        <div class="clip-thumb">
-          <a class="clip-thumb-a" href="${cl.url}" target="_blank" rel="noopener">
-            <div class="clip-play">▶️</div>
-          </a>
-        </div>
-        <div class="clip-body">
-          <div class="clip-title">${esc(cl.title)}</div>
-          <div class="clip-meta">
-            <span>👤 ${esc(cl.char_name)}</span>
-            ${cl.description?`<span>· ${esc(cl.description)}</span>`:''}
-          </div>
-        </div>
-        <div class="clip-foot">${vBtn}<a class="clip-link" href="${cl.url}" target="_blank" rel="noopener">Ver →</a></div>
-      </div>`;
+      const embedUrl = getVideoEmbed(cl.url);
+      const mediaSection = embedUrl
+        ? '<div class="clip-embed-wrap"><iframe src="'+embedUrl+'" style="width:100%;aspect-ratio:16/9;border:none;display:block" allowfullscreen></iframe></div>'
+        : '<div class="clip-thumb"><a class="clip-thumb-a" href="'+cl.url+'" target="_blank" rel="noopener"><div class="clip-play">▶️</div></a></div>';
+
+      h += '<div class="clip-card" id="clip-'+cl.id+'">' +
+        (isTop ? '<div class="clip-top">🏆 Top Clip</div>' : '') +
+        mediaSection +
+        '<div class="clip-body">' +
+          '<div class="clip-title">'+esc(cl.title)+'</div>' +
+          '<div class="clip-meta"><span>👤 '+esc(cl.char_name)+'</span>'+(cl.description?'<span>· '+esc(cl.description)+'</span>':'')+'</div>' +
+        '</div>' +
+        '<div class="clip-foot">' +
+          vBtn +
+          '<div style="display:flex;align-items:center;gap:8px">' +
+            '<span class="clip-comments-toggle" onclick="toggleComments(\"'+cl.id+'\")">💬 <span id="ccount-'+cl.id+'">0</span></span>' +
+            '<a class="clip-link" href="'+cl.url+'" target="_blank" rel="noopener">↗</a>' +
+          '</div>' +
+        '</div>' +
+        '<div class="clip-comments" id="comments-'+cl.id+'" style="display:none">' +
+          '<div class="clip-comments-title">Comentarios</div>' +
+          '<div id="comments-list-'+cl.id+'"><div style="color:var(--muted);font-size:.78rem;font-style:italic">Cargando…</div></div>' +
+          '<div class="clip-comment-input">' +
+            '<input class="clip-comment-field" type="text" id="comment-input-'+cl.id+'" placeholder="Escribe un comentario…" maxlength="200" onkeydown="if(event.key===\'Enter\')submitComment(\''+cl.id+'\')" />' +
+            '<button class="clip-comment-send" onclick="submitComment(\"'+cl.id+'\")">Enviar</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
     });
   } else {
     h+=`<div class="empty-state" style="grid-column:1/-1">
@@ -2271,7 +2352,8 @@ async function banU(id){
   loadAdminUsers(); toast('🚫 Baneado');
 }
 async function delClip(id){
-  await sb.from('clips').delete().eq('id',id);
+  const{error}=await sb.from('clips').delete().eq('id',id);
+  if(error){toast('❌ Error: '+error.message); console.error(error); return;}
   await renderClips(); loadAdminClips(); toast('🗑️ Clip eliminado');
 }
 
