@@ -1192,7 +1192,7 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
     <div id="pListAdmin"></div>
     <div class="adm-sec">Usuarios registrados</div>
     <div id="usersAdmin"><div style="color:var(--muted);font-size:.76rem;font-style:italic">Cargando…</div></div>
-    <div class="adm-sec">Clips</div>
+    <div class="adm-sec">🎥 Clips — Borrar los que no tocan</div>
     <div id="clipsAdmin"><div style="color:var(--muted);font-size:.76rem;font-style:italic">Cargando…</div></div>
   </div>
 </div>
@@ -1958,32 +1958,25 @@ async function loadWAData(){
 }
 
 /* ── TWITCH EMBED HELPERS ── */
-function getTwitchEmbed(url){
+function getVideoEmbed(url){
   if(!url) return null;
-  // VOD: twitch.tv/videos/123456
+
+  // YouTube: youtube.com/watch?v=ID or youtu.be/ID
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^?&/]+)/);
+  if(ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?rel=0`;
+
+  // YouTube shorts
+  const ytShort = url.match(/youtube\.com\/shorts\/([^?&/]+)/);
+  if(ytShort) return `https://www.youtube.com/embed/${ytShort[1]}?rel=0`;
+
+  // Twitch VOD
   const vodMatch = url.match(/twitch\.tv\/videos\/(\d+)/);
-  if(vodMatch) return {type:'vod', id:vodMatch[1]};
-  // Clip: clips.twitch.tv/ClipName or twitch.tv/clip/ClipName
+  if(vodMatch) return `https://player.twitch.tv/?video=${vodMatch[1]}&parent=thewellsanguino.github.io&autoplay=false`;
+
+  // Twitch clip
   const clipMatch = url.match(/clips\.twitch\.tv\/([^?&/]+)/) || url.match(/twitch\.tv\/[^/]+\/clip\/([^?&/]+)/);
-  if(clipMatch) return {type:'clip', id:clipMatch[1]};
-  return null;
-}
+  if(clipMatch) return `https://clips.twitch.tv/embed?clip=${clipMatch[1]}&parent=thewellsanguino.github.io&autoplay=false`;
 
-function getTwitchThumb(url){
-  const info = getTwitchEmbed(url);
-  if(!info) return null;
-  if(info.type === 'clip'){
-    return `https://clips-media-assets2.twitch.tv/${info.id}-preview-480x272.jpg`;
-  }
-  return null;
-}
-
-function getTwitchEmbedUrl(url){
-  const info = getTwitchEmbed(url);
-  if(!info) return null;
-  const parent = 'thewellsanguino.github.io';
-  if(info.type === 'vod') return `https://player.twitch.tv/?video=${info.id}&parent=${parent}&autoplay=false`;
-  if(info.type === 'clip') return `https://clips.twitch.tv/embed?clip=${info.id}&parent=${parent}&autoplay=false`;
   return null;
 }
 
