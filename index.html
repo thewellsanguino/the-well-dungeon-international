@@ -472,6 +472,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .char-realm{font-family:'Nunito',sans-serif;
   font-size:.77rem;color:var(--muted2);margin-top:2px;font-weight:600}
 .score-num{font-family:'Cinzel',serif;font-size:1.5rem;font-weight:900;text-align:center}
+.score-io{font-family:'Nunito',sans-serif;font-size:.65rem;font-weight:800;
+  color:var(--muted2);letter-spacing:.08em;margin-left:2px;vertical-align:middle}
 .score-bar-w{width:64px;height:4px;background:var(--fr);border-radius:3px;margin:5px auto 0;overflow:hidden}
 .score-bar-f{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--crimson2),var(--gold))}
 .spec-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
@@ -1299,6 +1301,7 @@ const QUOTES = [
   { text: '"Timer at 0:03 — gg boys."', author: '— El timer, sin piedad' },
   { text: '"Es international porque si no el Fuké no puede jugar."', author: '— Raik, redactando las bases' },
   { text: '"Key más alta: existe. La hacemos: pendiente."', author: '— The Well Progress Report™' },
+  { text: '"Dejad de preguntar tanto y simulaos."', author: '— Axon, nuestro Lord RL' },
 ];
 
 let quoteIdx = Math.floor(Math.random() * QUOTES.length);
@@ -2180,26 +2183,27 @@ function toast(msg){
 updateNav();
 renderClips();
 loadMessages();
-// Cargar participantes desde Supabase, luego cargar cache RIO
-loadParticipants().then(async ()=>{
-  // Intentar cargar cache de Supabase
-  const cache=await sbGet('rio_cache','select=*');
-  if(Array.isArray(cache)){
+
+// Siempre cargar desde Supabase — sin caché local
+async function initData(){
+  await loadParticipants();
+  const cache = await sbGet('rio_cache','select=*');
+  if(Array.isArray(cache) && cache.length){
     cache.forEach(c=>{
-      const k=c.name.toLowerCase()+'-'+rSlug(c.realm||'');
-      const runs=Array.isArray(c.best_runs)?c.best_runs:[];
-      rio[k]={score:c.score||0,runs,cls:c.class||'',
-        spec:c.spec||'',thumb:c.thumb||'',ilvl:c.ilvl||0,
-        best_key:c.best_key||0,best_key_dungeon:c.best_key_dungeon||'',
-        best_key_time:c.best_key_time||0,last_run:c.last_run||null,
-        spec_rank_eu:c.rank_eu||null,wa_ok:false};
+      const k = c.name.toLowerCase()+'-'+rSlug(c.realm||'');
+      const runs = Array.isArray(c.best_runs) ? c.best_runs : [];
+      rio[k] = {
+        score:c.score||0, runs, cls:c.class||'',
+        spec:c.spec||'', thumb:c.thumb||'', ilvl:c.ilvl||0,
+        best_key:c.best_key||0, best_key_dungeon:c.best_key_dungeon||'',
+        best_key_time:c.best_key_time||0, last_run:c.last_run||null,
+        spec_rank_eu:c.rank_eu||null, wa_ok:false
+      };
     });
     renderTable();
   }
-  // Auto-refresh si datos viejos (>30min)
-  const oldest=cache.length?Math.min(...cache.map(c=>new Date(c.updated_at||0).getTime())):0;
-  if(Date.now()-oldest>1800000) setTimeout(()=>loadAll(),1500);
-});
+}
+initData();
 </script>
 </body>
 </html>
