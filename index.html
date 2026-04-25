@@ -2427,6 +2427,31 @@ async function initData(){
     });
     renderTable();
   }
+
+  // Refresh silencioso en background — no bloquea la UI
+  setTimeout(async ()=>{
+    try{
+      await fetch('https://wowaudit-proxy.thewellsanguino.workers.dev/refresh');
+      // Cuando termina, recarga los datos actualizados de Supabase
+      const fresh = await sbGet('rio_cache','select=*');
+      if(Array.isArray(fresh) && fresh.length){
+        fresh.forEach(c=>{
+          const k = c.name.toLowerCase()+'-'+rSlug(c.realm||'');
+          const runs = Array.isArray(c.best_runs) ? c.best_runs : [];
+          rio[k] = {
+            score:c.score||0, runs, cls:c.class||'',
+            spec:c.spec||'', thumb:c.thumb||'', ilvl:c.ilvl||0,
+            best_key:c.best_key||0, best_key_dungeon:c.best_key_dungeon||'',
+            best_key_time:c.best_key_time||0, last_run:c.last_run||null,
+            spec_rank_eu:c.rank_eu||null, wa_ok:false
+          };
+        });
+        await loadParticipants();
+        renderTable();
+        toast('✅ Datos actualizados');
+      }
+    }catch(e){ console.warn('Background refresh:', e.message); }
+  }, 1500); // espera 1.5s para que cargue la UI primero
 }
 initData();
 </script>
