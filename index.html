@@ -333,17 +333,17 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
    GUILD QUOTE — rotates guild jokes
 ══════════════════════════════════════ */
 .guild-quote-bar{
-  margin:28px 0;padding:14px 22px;border-radius:8px;
-  background:rgba(200,168,75,.04);border:1px solid rgba(200,168,75,.1);
+  margin:28px 0;padding:16px 24px;border-radius:8px;
+  background:rgba(200,168,75,.07);border:1px solid rgba(200,168,75,.15);
   border-left:3px solid var(--gold3);
   display:flex;align-items:center;gap:14px;
   animation:fadeUp .5s ease both}
 .gq-icon{font-size:1.4rem;flex-shrink:0}
-.gq-text{font-family:'IM Fell English',serif;font-style:italic;
-  font-size:.95rem;color:rgba(216,200,160,.6);line-height:1.5}
-.gq-text em{color:var(--gold);font-style:normal;font-weight:600}
-.gq-author{font-family:'Cinzel',serif;font-size:.6rem;
-  color:var(--muted);margin-top:3px;letter-spacing:.08em}
+.gq-text{font-family:'Nunito',sans-serif;font-style:italic;
+  font-size:1rem;color:rgba(236,224,192,.85);line-height:1.5;font-weight:600}
+.gq-text em{color:var(--gold2);font-style:normal;font-weight:800}
+.gq-author{font-family:'Nunito',sans-serif;font-size:.72rem;
+  color:rgba(200,168,75,.55);margin-top:4px;letter-spacing:.04em;font-style:italic}
 
 /* ══════════════════════════════════════
    TABS
@@ -1118,9 +1118,33 @@ setInterval(rotateQuote, 8000);
 
 /* ── STATE ── */
 let CU=null, CP=null;
-let parts = JSON.parse(localStorage.getItem('twdi_p') || '[]');
-let rio   = JSON.parse(localStorage.getItem('twdi_rio') || '{}');
+let parts = []; // cargado desde Supabase
+let rio   = {}; // cache local
 let filt  = 'all', prevCD = {}, chatSub = null;
+
+/* ── SUPABASE REST HELPERS ── */
+const SB_URL = 'https://imwjtztlrjjbjvhyuzvt.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imltd2p0enRscmpqYmp2aHl1enZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNDk3MzgsImV4cCI6MjA5MjYyNTczOH0.J9GjIdKoJjLTIaYTkupBIlZScLmP5MKgg2AmQBWT4JQ';
+const SB_H   = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+
+async function sbGet(table, params=''){
+  try{const r=await fetch(`${SB_URL}/rest/v1/${table}?${params}`,{headers:SB_H});
+    return r.ok?r.json():[];}catch{return [];}
+}
+async function sbUpsert(table, data){
+  const h={...SB_H,'Prefer':'resolution=merge-duplicates,return=minimal'};
+  return fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:h,body:JSON.stringify(data)});
+}
+async function sbDel(table, filter){
+  return fetch(`${SB_URL}/rest/v1/${table}?${filter}`,{method:'DELETE',headers:SB_H});
+}
+
+async function loadParticipants(){
+  const data=await sbGet('participants','select=*&order=created_at.asc');
+  parts=Array.isArray(data)?data:[];
+  document.getElementById('heroCount').textContent=parts.length;
+  renderTable();
+}
 
 /* ── CANVAS ── */
 (function(){
@@ -1275,11 +1299,36 @@ function rSlug(r){return r.toLowerCase().replace(/'/g,'').replace(/\s+/g,'-');}
 const WA_PROXY = 'https://wowaudit-proxy.thewellsanguino.workers.dev';
 
 async function fetchRIO(name, realm){
-  const f='mythic_plus_scores_by_season:current,mythic_plus_best_runs,gear,thumbnail_url';
+  const f='mythic_plus_scores_by_season:current,mythic_plus_best_runs,mythic_plus_highest_level_runs,gear,thumbnail_url,raid_progression';
   try{
     const r=await fetch(`https://raider.io/api/v1/characters/profile?region=eu&realm=${rSlug(realm)}&name=${encodeURIComponent(name)}&fields=${encodeURIComponent(f)}`);
     const d=await r.json(); return r.ok ? d : null;
   }catch{return null;}
+}
+
+/* Guarda datos RIO en Supabase */
+async function saveRIOToSupabase(p, data, wa){
+  const sa=data.mythic_plus_scores_by_season;
+  const score=(sa&&sa[0])?Math.round(sa[0].scores.all):0;
+  const runs=(data.mythic_plus_best_runs||[]).slice(0,4).map(r=>r.short_name||r.dungeon.substring(0,6));
+  const bestRun=(data.mythic_plus_highest_level_runs||data.mythic_plus_best_runs||[])[0];
+  const bestKey=bestRun?bestRun.mythic_level:0;
+  const bestKeyDung=bestRun?(bestRun.short_name||bestRun.dungeon):'';
+  const bestKeyTime=bestRun?bestRun.clear_time_ms:0;
+  const lastRun=bestRun?bestRun.completed_at:null;
+  const cls=(data.class||'').toLowerCase().replace(/\s+/g,'-');
+  const spec=data.active_spec_name||'';
+  await sbUpsert('rio_cache',{
+    name:p.name, realm:rSlug(p.realm),
+    score, best_runs:runs, ilvl:wa.wa_ilvl||(data.gear?data.gear.item_level_equipped:0),
+    spec, class:cls, thumb:data.thumbnail_url||'',
+    best_key:bestKey, best_key_dungeon:bestKeyDung, best_key_time:bestKeyTime,
+    last_run:lastRun, updated_at:new Date().toISOString()
+  });
+  return {score,runs,cls,spec,thumb:data.thumbnail_url||'',
+    ilvl:wa.wa_ilvl||(data.gear?data.gear.item_level_equipped:0),
+    best_key:bestKey,best_key_dungeon:bestKeyDung,best_key_time:bestKeyTime,
+    last_run:lastRun,wa_ok:!!wa.wa_ilvl};
 }
 
 /* Carga datos de WoW Audit desde Supabase (via Worker) */
@@ -1310,55 +1359,39 @@ async function loadAll(){
   const btn=document.getElementById('refreshBtn'), icon=document.getElementById('rIcon');
   btn.disabled=true; icon.classList.add('spin');
 
-  // Lanzamos RIO y WoW Audit en paralelo
   const [rioRes, waMap] = await Promise.all([
     Promise.all(parts.map(p=>fetchRIO(p.name, p.realm))),
     fetchWA()
   ]);
 
-  const waOk = Object.keys(waMap).length > 0;
+  const waOk=Object.keys(waMap).length>0;
   let rioOk=0;
 
+  const savePromises=[];
   rioRes.forEach((data,i)=>{
     if(data){
-      const p=parts[i], sa=data.mythic_plus_scores_by_season;
-      const k=pk(p);
-      const wa=waMap[k]||{};
-      rio[k]={
-        score:   (sa&&sa[0]) ? Math.round(sa[0].scores.all) : 0,
-        runs:    (data.mythic_plus_best_runs||[]).slice(0,4).map(r=>`+${r.mythic_level} ${r.short_name||r.dungeon.substring(0,5)}`),
-        cls:     (data.class||'').toLowerCase().replace(/\s+/g,'-') || wa.wa_class || '',
-        spec:    data.active_spec_name || wa.wa_spec || '',
-        thumb:   data.thumbnail_url || '',
-        // ilvl: preferir WoW Audit (más preciso), fallback RIO
-        ilvl:    wa.wa_ilvl || (data.gear ? data.gear.item_level_equipped : 0),
-        role:    wa.wa_role || '',
-        wa_ok:   !!wa.wa_ilvl,
-        updated: Date.now()
-      };
+      const p=parts[i], k=pk(p), wa=waMap[k]||{};
+      savePromises.push(saveRIOToSupabase(p,data,wa).then(d=>{rio[k]=d;}));
       rioOk++;
     }
   });
+  await Promise.all(savePromises);
 
-  // Si hay chars en WA que no están en RIO (sin score M+ todavía)
-  // los añadimos igual para mostrarlos en tabla
+  // Chars solo en WA sin score RIO
   parts.forEach(p=>{
     const k=pk(p);
-    if(!rio[k] && waMap[k]){
+    if(!rio[k]&&waMap[k]){
       const wa=waMap[k];
-      rio[k]={score:0, runs:[], cls:wa.wa_class, spec:wa.wa_spec,
-        thumb:'', ilvl:wa.wa_ilvl, role:wa.wa_role, wa_ok:true, updated:Date.now()};
+      rio[k]={score:0,runs:[],cls:wa.wa_class,spec:wa.wa_spec,
+        thumb:'',ilvl:wa.wa_ilvl,best_key:0,wa_ok:true};
     }
   });
 
-  localStorage.setItem('twdi_rio', JSON.stringify(rio));
   renderTable();
   btn.disabled=false; icon.classList.remove('spin');
-
-  const msg = waOk
+  toast(waOk
     ? `✅ ${rioOk} vía Raider.io · ${Object.keys(waMap).length} vía WoW Audit`
-    : `✅ ${rioOk} perfiles desde Raider.io · WoW Audit sin datos aún`;
-  toast(msg);
+    : `✅ ${rioOk} perfiles desde Raider.io`);
 }
 function pk(p){return p.name.toLowerCase()+'-'+rSlug(p.realm);}
 function sCol(s){
@@ -1384,7 +1417,9 @@ function renderTable(){
   let list=parts.map(p=>{
     const d=rio[pk(p)]||{};
     return{...p, score:d.score||0, runs:d.runs||[], cls:d.cls||p.class||'warrior',
-      spec:d.spec||p.spec||'', thumb:d.thumb||'', ilvl:d.ilvl||0};
+      spec:d.spec||p.spec||'', thumb:d.thumb||'', ilvl:d.ilvl||0,
+      best_key:d.best_key||0, best_key_dungeon:d.best_key_dungeon||'',
+      best_key_time:d.best_key_time||0, last_run:d.last_run||null, wa_ok:d.wa_ok||false};
   }).sort((a,b)=>b.score-a.score);
   const best=list[0]?.score||0;
   document.getElementById('goalLabel').textContent=best ? (best.toLocaleString('es-ES')+' IO') : '— IO';
@@ -1398,7 +1433,7 @@ function renderTable(){
   } else {
     let h=`<table class="rtable"><thead><tr>
       <th class="c">#</th><th>Personaje</th><th class="c">Score M+</th>
-      <th>Spec</th><th>Mejores Keys</th><th class="c">Estado</th>
+      <th>Spec</th><th class="c">Mejor Key</th><th>Última Key</th><th class="c">Estado</th>
     </tr></thead><tbody>`;
     list.forEach((p,i)=>{
       const gr=all.findIndex(s=>s.name===p.name && s.realm===p.realm)+1;
@@ -1423,7 +1458,12 @@ function renderTable(){
         <td><div class="score-num" style="color:${sc}">${p.score>0 ? p.score.toLocaleString('es-ES') : '—'}</div>
           <div class="score-bar-w"><div class="score-bar-f" style="width:${pct}%"></div></div></td>
         <td><span class="spec-tag">${p.spec||'—'}</span></td>
-        <td>${keys}</td>
+        <td style="text-align:center">
+          ${p.best_key?`<span style="font-family:'Cinzel',serif;font-weight:900;font-size:1rem;color:var(--gold2)">+${p.best_key}</span><div style="font-size:.62rem;color:var(--muted)">${p.best_key_dungeon||''}</div>`:'<span style="color:var(--muted)">—</span>'}
+        </td>
+        <td style="font-size:.72rem;color:var(--muted);font-family:'IM Fell English',serif;font-style:italic">
+          ${p.last_run?new Date(p.last_run).toLocaleDateString('es-ES',{day:'2-digit',month:'short'}):'—'}
+        </td>
         <td style="text-align:center"><span class="${sc2}">${st}</span></td>
       </tr>`;
     });
@@ -1651,30 +1691,33 @@ async function loadAdminClips(){
     <td><button class="bxs bx-d" onclick="delClip('${c.id}')">Eliminar</button></td>
   </tr>`).join('')}</tbody></table>`;
 }
-function addParticipant(){
+async function addParticipant(){
   const name=document.getElementById('aName').value.trim();
   const realm=document.getElementById('aRealm').value.trim()||'silvermoon';
   const spec=document.getElementById('aSpec').value.trim();
   const cls=document.getElementById('aClass').value;
-  const msg=document.getElementById('adminMsg');
   if(!name){showAdminMsg('Introduce el nombre del personaje.','err'); return;}
-  if(parts.find(p=>p.name.toLowerCase()===name.toLowerCase() && rSlug(p.realm)===rSlug(realm))){
+  if(parts.find(p=>p.name.toLowerCase()===name.toLowerCase()&&rSlug(p.realm)===rSlug(realm))){
     showAdminMsg('Ya registrado.','err'); return;
   }
-  parts.push({name, realm, spec, class:cls});
-  localStorage.setItem('twdi_p', JSON.stringify(parts));
+  // Guardar en Supabase
+  const r=await sbUpsert('participants',{name,realm:rSlug(realm),spec,class:cls});
+  if(!r.ok && r.status!==201 && r.status!==200){
+    showAdminMsg('Error al guardar en Supabase.','err'); return;
+  }
   document.getElementById('aName').value='';
   document.getElementById('aSpec').value='';
   showAdminMsg(name+' añadido ✅','ok');
-  renderAdminP(); renderTable();
+  await loadParticipants();
+  renderAdminP();
   toast('⚔️ '+name+' se une al Pozo');
 }
-function removeP(i){
-  delete rio[pk(parts[i])];
-  parts.splice(i,1);
-  localStorage.setItem('twdi_p', JSON.stringify(parts));
-  localStorage.setItem('twdi_rio', JSON.stringify(rio));
-  renderAdminP(); renderTable();
+async function removeP(i){
+  const p=parts[i];
+  await sbDel('participants',`name=eq.${encodeURIComponent(p.name)}&realm=eq.${encodeURIComponent(rSlug(p.realm))}`);
+  delete rio[pk(p)];
+  await loadParticipants();
+  renderAdminP();
 }
 async function makeAdmin(id){
   await sb.from('profiles').update({is_admin:true}).eq('id',id);
@@ -1711,13 +1754,26 @@ function toast(msg){
 
 /* ── INIT ── */
 updateNav();
-renderTable();
 renderClips();
 loadMessages();
-if(parts.length){
-  const last=Math.min(...parts.map(p=>(rio[pk(p)]?.updated||0)));
-  if(Date.now()-last>1800000) setTimeout(()=>loadAll(), 1500);
-}
+// Cargar participantes desde Supabase, luego cargar cache RIO
+loadParticipants().then(async ()=>{
+  // Intentar cargar cache de Supabase
+  const cache=await sbGet('rio_cache','select=*');
+  if(Array.isArray(cache)){
+    cache.forEach(c=>{
+      const k=c.name.toLowerCase()+'-'+rSlug(c.realm||'');
+      rio[k]={score:c.score||0,runs:c.best_runs||[],cls:c.class||'',
+        spec:c.spec||'',thumb:c.thumb||'',ilvl:c.ilvl||0,
+        best_key:c.best_key||0,best_key_dungeon:c.best_key_dungeon||'',
+        best_key_time:c.best_key_time||0,last_run:c.last_run||null,wa_ok:false};
+    });
+    renderTable();
+  }
+  // Auto-refresh si datos viejos (>30min)
+  const oldest=cache.length?Math.min(...cache.map(c=>new Date(c.updated_at||0).getTime())):0;
+  if(Date.now()-oldest>1800000) setTimeout(()=>loadAll(),1500);
+});
 </script>
 </body>
 </html>
