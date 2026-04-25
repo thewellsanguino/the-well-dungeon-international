@@ -1313,7 +1313,7 @@ function rSlug(r){return r.toLowerCase().replace(/'/g,'').replace(/\s+/g,'-');}
 const WA_PROXY = 'https://wowaudit-proxy.thewellsanguino.workers.dev';
 
 async function fetchRIO(name, realm){
-  const f='mythic_plus_scores_by_season:current,mythic_plus_best_runs,mythic_plus_highest_level_runs,gear,thumbnail_url,raid_progression';
+  const f='mythic_plus_scores_by_season:current,mythic_plus_best_runs,mythic_plus_highest_level_runs,mythic_plus_recent_runs,gear,thumbnail_url,raid_progression,mythic_plus_ranks,class';
   try{
     const r=await fetch(`https://raider.io/api/v1/characters/profile?region=eu&realm=${rSlug(realm)}&name=${encodeURIComponent(name)}&fields=${encodeURIComponent(f)}`);
     const d=await r.json(); return r.ok ? d : null;
@@ -1323,26 +1323,73 @@ async function fetchRIO(name, realm){
 /* Guarda datos RIO en Supabase */
 async function saveRIOToSupabase(p, data, wa){
   const sa=data.mythic_plus_scores_by_season;
-  const score=(sa&&sa[0])?Math.round(sa[0].scores.all):0;
-  const runs=(data.mythic_plus_best_runs||[]).slice(0,4).map(r=>r.short_name||r.dungeon.substring(0,6));
-  const bestRun=(data.mythic_plus_highest_level_runs||data.mythic_plus_best_runs||[])[0];
+  const scoreAll=(sa&&sa[0])?Math.round(sa[0].scores.all):0;
+
+  // Score por dungeon y specs
+  const dungeonScores={};
+  const specScores={};
+  if(sa&&sa[0]&&sa[0].segments){
+    sa[0].segments.forEach(seg=>{
+      if(seg.dungeon)dungeonScores[seg.dungeon]={score:Math.round(seg.score||0),level:seg.level||0};
+    });
+  }
+  // Scores por spec/rol
+  if(sa&&sa[0]){
+    const s=sa[0].scores;
+    if(s.dps)specScores.dps=Math.round(s.dps);
+    if(s.healer)specScores.healer=Math.round(s.healer);
+    if(s.tank)specScores.tank=Math.round(s.tank);
+  }
+
+  // Best runs con info de timer
+  const bestRuns=(data.mythic_plus_best_runs||[]).slice(0,8).map(r=>({
+    dungeon:r.short_name||r.dungeon||'',
+    level:r.mythic_level||0,
+    score:Math.round(r.score||0),
+    time_ms:r.clear_time_ms||0,
+    par_time_ms:r.par_time_ms||0,
+    in_time:r.num_keystone_upgrades>0,
+    upgrades:r.num_keystone_upgrades||0,
+    completed_at:r.completed_at||null
+  }));
+
+  // Highest key
+  const highRuns=data.mythic_plus_highest_level_runs||data.mythic_plus_best_runs||[];
+  const bestRun=highRuns[0]||null;
   const bestKey=bestRun?bestRun.mythic_level:0;
   const bestKeyDung=bestRun?(bestRun.short_name||bestRun.dungeon):'';
   const bestKeyTime=bestRun?bestRun.clear_time_ms:0;
   const lastRun=bestRun?bestRun.completed_at:null;
+
+  // Ranking EU de spec
+  const ranks=data.mythic_plus_ranks||{};
+  const specRankEU=ranks.spec_eu?.rank||ranks.spec?.rank||null;
+  const specRankWorld=ranks.spec_world?.rank||null;
+  const classRankEU=ranks.class_eu?.rank||ranks.class?.rank||null;
+
   const cls=(data.class||'').toLowerCase().replace(/\s+/g,'-');
   const spec=data.active_spec_name||'';
+  const ilvl=wa.wa_ilvl||(data.gear?data.gear.item_level_equipped:0);
+
   await sbUpsert('rio_cache',{
     name:p.name, realm:rSlug(p.realm),
-    score, best_runs:runs, ilvl:wa.wa_ilvl||(data.gear?data.gear.item_level_equipped:0),
+    score:scoreAll, best_runs:bestRuns, ilvl,
     spec, class:cls, thumb:data.thumbnail_url||'',
-    best_key:bestKey, best_key_dungeon:bestKeyDung, best_key_time:bestKeyTime,
-    last_run:lastRun, updated_at:new Date().toISOString()
+    best_key:bestKey, best_key_dungeon:bestKeyDung,
+    best_key_time:bestKeyTime, last_run:lastRun,
+    rank_eu:specRankEU, updated_at:new Date().toISOString()
   });
-  return {score,runs,cls,spec,thumb:data.thumbnail_url||'',
-    ilvl:wa.wa_ilvl||(data.gear?data.gear.item_level_equipped:0),
-    best_key:bestKey,best_key_dungeon:bestKeyDung,best_key_time:bestKeyTime,
-    last_run:lastRun,wa_ok:!!wa.wa_ilvl};
+
+  return {
+    score:scoreAll, runs:bestRuns, cls, spec,
+    thumb:data.thumbnail_url||'', ilvl,
+    best_key:bestKey, best_key_dungeon:bestKeyDung,
+    best_key_time:bestKeyTime, last_run:lastRun,
+    spec_rank_eu:specRankEU, spec_rank_world:specRankWorld,
+    class_rank_eu:classRankEU,
+    dungeon_scores:dungeonScores, spec_scores:specScores,
+    wa_ok:!!wa.wa_ilvl
+  };
 }
 
 /* Carga datos de WoW Audit desde Supabase (via Worker) */
@@ -1433,7 +1480,10 @@ function renderTable(){
     return{...p, score:d.score||0, runs:d.runs||[], cls:d.cls||p.class||'warrior',
       spec:d.spec||p.spec||'', thumb:d.thumb||'', ilvl:d.ilvl||0,
       best_key:d.best_key||0, best_key_dungeon:d.best_key_dungeon||'',
-      best_key_time:d.best_key_time||0, last_run:d.last_run||null, wa_ok:d.wa_ok||false};
+      best_key_time:d.best_key_time||0, last_run:d.last_run||null,
+      spec_rank_eu:d.spec_rank_eu||null, class_rank_eu:d.class_rank_eu||null,
+      dungeon_scores:d.dungeon_scores||{}, spec_scores:d.spec_scores||{},
+      wa_ok:d.wa_ok||false};
   }).sort((a,b)=>b.score-a.score);
   const best=list[0]?.score||0;
   document.getElementById('goalLabel').textContent=best ? (best.toLocaleString('es-ES')+' IO') : '— IO';
@@ -1447,7 +1497,7 @@ function renderTable(){
   } else {
     let h=`<table class="rtable"><thead><tr>
       <th class="c">#</th><th>Personaje</th><th class="c">Score M+</th>
-      <th>Spec</th><th class="c">Mejor Key</th><th class="c">Última Key</th>
+      <th>Specs</th><th class="c">Mejor Key</th><th class="c">Rank EU Spec</th><th class="c">Última Key</th>
     </tr></thead><tbody>`;
     list.forEach((p,i)=>{
       const gr=all.findIndex(s=>s.name===p.name && s.realm===p.realm)+1;
@@ -1470,21 +1520,42 @@ function renderTable(){
           <div style="display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap">
             <span class="char-realm">${p.realm}${p.ilvl?' · '+p.ilvl+' ilvl':''}</span>
             <a href="https://raider.io/characters/eu/${rSlug(p.realm)}/${encodeURIComponent(p.name)}" target="_blank" rel="noopener"
-              style="font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;
-              color:rgba(200,168,75,.5);text-decoration:none;
-              padding:1px 7px;border-radius:3px;border:1px solid rgba(200,168,75,.15);
-              transition:all .15s;white-space:nowrap"
-              onmouseover="this.style.color='var(--gold2)';this.style.borderColor='rgba(200,168,75,.4)'"
-              onmouseout="this.style.color='rgba(200,168,75,.5)';this.style.borderColor='rgba(200,168,75,.15)'">
-              IO ↗
+              style="font-family:'Nunito',sans-serif;font-size:.75rem;font-weight:800;
+              color:var(--gold2);text-decoration:none;
+              padding:3px 10px;border-radius:4px;
+              background:rgba(200,168,75,.12);
+              border:1px solid rgba(200,168,75,.3);
+              transition:all .18s;white-space:nowrap;display:inline-block"
+              onmouseover="this.style.background='rgba(200,168,75,.25)';this.style.borderColor='var(--gold)'"
+              onmouseout="this.style.background='rgba(200,168,75,.12)';this.style.borderColor='rgba(200,168,75,.3)'">
+              Raider.io ↗
             </a>
           </div>
         </div></div></td>
         <td><div class="score-num" style="color:${sc}">${p.score>0 ? p.score.toLocaleString('es-ES') : '—'}</div>
           <div class="score-bar-w"><div class="score-bar-f" style="width:${pct}%"></div></div></td>
-        <td><span class="spec-tag">${p.spec||'—'}</span></td>
+        <td>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <span class="spec-tag" style="font-size:.74rem">${p.spec||'—'}</span>
+            ${p.spec_scores&&Object.keys(p.spec_scores).length?
+              `<div style="display:flex;gap:4px;flex-wrap:wrap">
+                ${p.spec_scores.dps?`<span style="font-size:.6rem;padding:1px 6px;border-radius:3px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#f87171;font-family:'Cinzel',serif">DPS ${p.spec_scores.dps}</span>`:''}
+                ${p.spec_scores.tank?`<span style="font-size:.6rem;padding:1px 6px;border-radius:3px;background:rgba(74,158,255,.1);border:1px solid rgba(74,158,255,.2);color:#7bbfff;font-family:'Cinzel',serif">Tank ${p.spec_scores.tank}</span>`:''}
+                ${p.spec_scores.healer?`<span style="font-size:.6rem;padding:1px 6px;border-radius:3px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:#4ade80;font-family:'Cinzel',serif">Heal ${p.spec_scores.healer}</span>`:''}
+              </div>`:''}
+          </div>
+        </td>
         <td style="text-align:center">
-          ${p.best_key?`<span style="font-family:'Cinzel',serif;font-weight:900;font-size:1.2rem;color:var(--gold2)">+${p.best_key}</span><div style="font-size:.72rem;color:var(--muted);margin-top:2px">${p.best_key_dungeon||''}</div>`:'<span style="color:var(--muted)">—</span>'}
+          ${p.best_key?`<span style="font-family:'Cinzel',serif;font-weight:900;font-size:1.2rem;color:var(--gold2)">+${p.best_key}</span>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:2px">${p.best_key_dungeon||''}</div>
+            <div style="font-size:.6rem;margin-top:2px;color:${p.best_key_time&&p.runs[0]&&p.runs[0].in_time?'var(--green2)':'var(--crimson2)'}">${p.runs[0]?(p.runs[0].in_time?'✅ In time':'❌ Depleted'):''}
+            </div>`:'<span style="color:var(--muted)">—</span>'}
+        </td>
+        <td style="text-align:center">
+          ${p.spec_rank_eu
+            ?`<div style="font-family:'Cinzel',serif;font-weight:900;font-size:1rem;color:var(--gold2)">#${p.spec_rank_eu.toLocaleString()}</div>
+              <div style="font-size:.6rem;color:var(--muted);margin-top:2px">EU ${p.spec||''}</div>`
+            :'<span style="color:var(--muted);font-size:.8rem">—</span>'}
         </td>
         <td style="text-align:center;font-size:.82rem;color:var(--muted);font-family:'Nunito',sans-serif">
           ${p.last_run?new Date(p.last_run).toLocaleDateString('es-ES',{day:'2-digit',month:'short'}):'—'}
@@ -1787,10 +1858,12 @@ loadParticipants().then(async ()=>{
   if(Array.isArray(cache)){
     cache.forEach(c=>{
       const k=c.name.toLowerCase()+'-'+rSlug(c.realm||'');
-      rio[k]={score:c.score||0,runs:c.best_runs||[],cls:c.class||'',
+      const runs=Array.isArray(c.best_runs)?c.best_runs:[];
+      rio[k]={score:c.score||0,runs,cls:c.class||'',
         spec:c.spec||'',thumb:c.thumb||'',ilvl:c.ilvl||0,
         best_key:c.best_key||0,best_key_dungeon:c.best_key_dungeon||'',
-        best_key_time:c.best_key_time||0,last_run:c.last_run||null,wa_ok:false};
+        best_key_time:c.best_key_time||0,last_run:c.last_run||null,
+        spec_rank_eu:c.rank_eu||null,wa_ok:false};
     });
     renderTable();
   }
