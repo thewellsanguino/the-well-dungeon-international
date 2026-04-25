@@ -1992,16 +1992,11 @@ async function renderClips(){
   const{data:clips}=await sb.from('clips').select('*').eq('approved',true).order('votes_count',{ascending:false});
   // Votes tracked locally per browser
   const grid=document.getElementById('clipsGrid');
-  let h=CU
-    ?`<div class="clip-add-card" onclick="document.getElementById('clipForm').classList.toggle('open')">
-        <div style="font-size:2.1rem">🎬</div>
-        <div>Subir Clip</div>
-        <div style="font-size:.66rem;font-weight:400;color:var(--muted);margin-top:3px;font-style:italic;text-transform:none;font-family:'IM Fell English',serif">Aquí se viene llorado de casa</div>
-      </div>`
-    :`<div class="clip-add-card" onclick="openModal('loginModal')">
-        <div style="font-size:2.1rem">🎬</div>
-        <div>Login para subir clips</div>
-      </div>`;
+  let h=`<div class="clip-add-card" onclick="document.getElementById('clipForm').classList.toggle('open')">
+      <div style="font-size:2.1rem">🎬</div>
+      <div>Subir Clip</div>
+      <div style="font-size:.66rem;font-weight:400;color:var(--muted);margin-top:3px;font-style:italic;text-transform:none;font-family:'Nunito',sans-serif">Aquí se viene llorado de casa</div>
+    </div>`;
   if(clips && clips.length){
     clips.forEach((cl,i)=>{
       const isTop=i===0 && cl.votes_count>0;
@@ -2107,13 +2102,12 @@ async function loadAllCommentCounts(){
 }
 
 async function submitClip(){
-  if(!CU){openModal('loginModal'); return;}
   const char=document.getElementById('cChar').value.trim();
   const title=document.getElementById('cTitle').value.trim();
   const url=document.getElementById('cUrl').value.trim();
   const desc=document.getElementById('cDesc').value.trim();
   if(!char||!title||!url){toast('⚠ Rellena personaje, título y URL'); return;}
-  const{error}=await sb.from('clips').insert({user_id:CU.id,char_name:char,title,url,description:desc});
+  const{error}=await sb.from('clips').insert({char_name:char,title,url,description:desc});
   if(error){toast('❌ Error: '+error.message); return;}
   document.getElementById('clipForm').classList.remove('open');
   ['cChar','cTitle','cUrl','cDesc'].forEach(id=>document.getElementById(id).value='');
