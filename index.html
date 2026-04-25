@@ -1086,8 +1086,6 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
       <div class="rule-block wow-panel rb-green" style="border-radius:10px">
         <div class="rb-title">📊 Clasificación</div>
         <div class="rule-li"><span>📈</span><span>Ranking por <strong>Score M+</strong> en tiempo real via Raider.io</span></div>
-        <div class="rule-li"><span>👥</span><span>Al final debes haber jugado con un mínimo de personas distintas del evento</span></div>
-        <div class="rule-li"><span>🤝</span><span>Empate → premio repartido a partes iguales</span></div>
         <div class="meme-note">*El chamán healer es el único healer con corte de 30 segundos. Lo sabemos. Callad.</div>
       </div>
     </div>
@@ -1929,53 +1927,76 @@ async function loadWAData(){
       return;
     }
 
-    // Parse headers and rows
-    const hdrs = json[0];
-    const nameIdx    = hdrs.indexOf('Name') !== -1 ? hdrs.indexOf('Name') : 0;
-    const classIdx   = hdrs.findIndex(h => h === 'Class');
-    const realmIdx   = hdrs.findIndex(h => h === 'Realm');
-    const ilvlIdx    = hdrs.findIndex(h => h === 'Item level' || h === 'item_level');
-    const rankIdx    = hdrs.findIndex(h => h === 'Rank');
-    const scoreIdx   = hdrs.findIndex(h => h === 'm+_score');
-    const weekMIdx   = hdrs.findIndex(h => h === 'week_mythic_dungeons');
-    const seasMIdx   = hdrs.findIndex(h => h === 'season_mythic_dungeons');
-    const weekHighIdx= hdrs.findIndex(h => h === 'weekly_highest_m+');
-    const seasHighIdx= hdrs.findIndex(h => h === 'season_highest_m+');
-    const upgradeIdx = hdrs.findIndex(h => h === 'total_upgrades_missing');
-    const socketsIdx = hdrs.findIndex(h => h === 'empty_sockets');
-    const raidHIdx   = hdrs.findIndex(h => h === 'raids_heroic');
-    const raidMIdx   = hdrs.findIndex(h => h === 'raids_mythic');
-    const roleIdx    = hdrs.findIndex(h => h === 'role');
-    const lastModIdx = hdrs.findIndex(h => h === 'blizzard_last_modified');
+    // Fixed column indices based on WoW Audit JSON structure
+    // Row 0 = metadata, Row 1+ = character data
+    // Character rows: [0]=Name, [1]=Class, [2]=Realm, [3]=ilvl(float)
+    // Gear slots: indices 6-69 (16 slots × 4 cols)
+    // Stats start at 70
+    const I = {
+      name:     0, cls:    1, realm:  2, ilvl:   3,
+      role:     92, seasM: 93, weekM: 105,
+      rank:     129,
+      raidH:    141, raidM: 151,
+      score:    163, weekHigh: 164, seasHigh: 165,
+      sockets:  90,
+      upgrade:  null  // calculated differently
+    };
 
-    const rows = json.slice(1).filter(r => r[nameIdx]);
+    // Find total_upgrades_missing in header row
+    const hdrs = json[0];
+    const upgradeHeaderIdx = hdrs.indexOf('total_upgrades_missing');
+
+    const rows = json.slice(1).filter(r => Array.isArray(r) && r[0] && typeof r[0] === 'string' && r[0] !== '25-04');
 
     // Sort by ilvl desc
-    rows.sort((a,b) => (parseFloat(b[ilvlIdx])||0) - (parseFloat(a[ilvlIdx])||0));
+    rows.sort((a,b) => (parseFloat(b[3])||0) - (parseFloat(a[3])||0));
 
     const th = (t) => `<th style="padding:9px 12px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold2);text-align:center;opacity:.8;white-space:nowrap">${t}</th>`;
     const td = (t, style='') => `<td style="padding:9px 12px;text-align:center;font-size:.82rem;font-family:'Nunito',sans-serif;color:var(--text2);${style}">${t||'—'}</td>`;
     const tdl = (t, style='') => `<td style="padding:9px 12px;text-align:left;font-size:.82rem;font-family:'Nunito',sans-serif;color:var(--text2);${style}">${t||'—'}</td>`;
 
-    const roleIcon = (r) => r==='Tank'?'🛡️':r==='Heal'?'💚':r==='Melee'?'⚔️':r==='Ranged'?'🏹':'❓';
+    const roleIcon = (r) => {
+      if(!r) return '';
+      if(r.toLowerCase().includes('tank')) return '🛡️';
+      if(r.toLowerCase().includes('heal')) return '💚';
+      if(r.toLowerCase().includes('melee')) return '⚔️';
+      if(r.toLowerCase().includes('ranged')) return '🏹';
+      return '❓';
+    };
 
     const tableRows = rows.map(r => {
-      const name    = r[nameIdx] || '';
-      const cls     = r[classIdx] || '';
-      const realm   = r[realmIdx] || '';
-      const ilvl    = parseFloat(r[ilvlIdx]) || 0;
-      const rank    = r[rankIdx] || '';
-      const score   = r[scoreIdx] || 0;
-      const weekM   = r[weekMIdx] || 0;
-      const seasM   = r[seasMIdx] || 0;
-      const weekH   = r[weekHighIdx] || 0;
-      const seasH   = r[seasHighIdx] || 0;
-      const upgrades= r[upgradeIdx] || 0;
-      const sockets = r[socketsIdx] || 0;
-      const raidH   = r[raidHIdx] || '0/0';
-      const raidM   = r[raidMIdx] || '0/0';
-      const role    = r[roleIdx] || '';
-      const clsSlug = cls.toLowerCase().replace(/\s+/g,'-');
+      const name    = r[I.name]  || '';
+      const cls     = r[I.cls]   || '';
+      const realm   = r[I.realm] || '';
+      const ilvl    = parseFloat(r[I.ilvl]) || 0;
+      const rank    = r[I.rank]  || '';
+      const score   = parseFloat(r[I.score]) || 0;
+      const weekM   = parseInt(r[I.weekM])   || 0;
+      const seasM   = parseInt(r[I.seasM])   || 0;
+      const weekH   = parseInt(r[I.weekHigh])|| 0;
+      const seasH   = parseInt(r[I.seasHigh])|| 0;
+      const sockets = parseInt(r[I.sockets]) || 0;
+      const role    = r[I.role]  || '';
+      const clsSlug = cls.toLowerCase().replace(/ /g,'-');
+
+      // Parse raid progress - format is "X/Y" or "bossname_bossname@Season@"
+      const raidHRaw = r[I.raidH] || '';
+      const raidMRaw = r[I.raidM] || '';
+      // Count kills: split by | and count non-zero
+      const parseRaid = (raw) => {
+        if(!raw || raw === '0/0') return '—';
+        if(typeof raw === 'string' && raw.includes('@')) {
+          // Boss kill format: count non-dash entries before @Season@
+          const bosses = raw.split('@')[0].split('_').filter(b=>b&&b!=='-');
+          return bosses.length + ' kills';
+        }
+        return raw;
+      };
+      const raidH = parseRaid(raidHRaw);
+      const raidM = parseRaid(raidMRaw);
+
+      // upgrades: find from header if available, else skip
+      const upgrades = upgradeHeaderIdx !== -1 ? (parseInt(r[upgradeHeaderIdx])||0) : 0;
 
       const upgradeColor = upgrades > 5 ? 'color:var(--crimson2);font-weight:800' : upgrades > 0 ? 'color:#f0a040;font-weight:700' : 'color:var(--green2);font-weight:700';
       const socketColor  = sockets > 0 ? 'color:var(--crimson2);font-weight:800' : 'color:var(--green2);font-weight:700';
