@@ -507,7 +507,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 /* ══════════════════════════════════════
    CLIPS
 ══════════════════════════════════════ */
-.clips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:12px}
+.clips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:16px}
+@media(max-width:600px){.clips-grid{grid-template-columns:1fr}}
+.clip-embed-wrap{width:100%;background:#000;overflow:hidden}
 .clip-card{border-radius:10px;overflow:hidden;border:1px solid var(--fr2);
   background:var(--s);transition:transform .2s,border-color .2s,box-shadow .2s}
 .clip-card:hover{transform:translateY(-5px);border-color:var(--gold3);
@@ -555,6 +557,34 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   letter-spacing:.07em;text-transform:uppercase;
   color:rgba(200,168,75,.35);text-decoration:none;transition:color .15s}
 .clip-link:hover{color:var(--gold)}
+.clip-comments{border-top:1px solid var(--fr);padding:12px 14px;background:rgba(0,0,0,.15)}
+.clip-comments-title{font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);margin-bottom:10px}
+.clip-comment{display:flex;gap:8px;margin-bottom:8px;animation:fadeUp .2s ease}
+.clip-comment-av{width:24px;height:24px;border-radius:4px;background:var(--s2);
+  border:1px solid var(--fr2);display:flex;align-items:center;justify-content:center;
+  font-family:'Cinzel',serif;font-size:.65rem;font-weight:900;color:var(--gold);flex-shrink:0}
+.clip-comment-bub{background:rgba(0,0,0,.25);border:1px solid var(--fr);
+  border-radius:6px;padding:5px 10px;flex:1}
+.clip-comment-user{font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;color:var(--gold)}
+.clip-comment-text{font-size:.82rem;color:var(--text2);line-height:1.4;margin-top:2px;font-family:'Nunito',sans-serif}
+.clip-comment-time{font-size:.58rem;color:var(--muted);margin-left:6px;font-family:'Nunito',sans-serif}
+.clip-comment-input{display:flex;gap:7px;margin-top:10px}
+.clip-comment-field{flex:1;padding:7px 11px;border:1px solid var(--fr2);border-radius:6px;
+  background:rgba(0,0,0,.3);color:var(--text2);font-family:'Nunito',sans-serif;
+  font-size:.82rem;outline:none;transition:border-color .2s}
+.clip-comment-field:focus{border-color:var(--gold3)}
+.clip-comment-send{padding:7px 14px;border-radius:6px;border:1px solid var(--gold3);
+  background:var(--golddim);color:var(--gold2);font-family:'Cinzel',serif;
+  font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  cursor:pointer;transition:all .2s;white-space:nowrap}
+.clip-comment-send:hover{background:rgba(200,168,75,.22)}
+.clip-comments-toggle{font-family:'Cinzel',serif;font-size:.62rem;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);
+  cursor:pointer;padding:4px 8px;border-radius:4px;transition:all .15s;
+  display:flex;align-items:center;gap:5px}
+.clip-comments-toggle:hover{color:var(--gold);background:var(--golddim)}
+
 .clip-add-card{border-radius:10px;border:1px dashed rgba(200,168,75,.16);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   min-height:180px;gap:8px;color:var(--muted);cursor:pointer;
@@ -1021,7 +1051,7 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
         <div><div class="f-lbl">Título</div><input class="wow-input" type="text" id="cTitle" placeholder="Esta key duele solo de mirarla"/></div>
       </div>
       <div class="form-row">
-        <div><div class="f-lbl">URL (Twitch / YouTube / Medal)</div><input class="wow-input" type="url" id="cUrl" placeholder="https://..."/></div>
+        <div><div class="f-lbl">URL (Twitch / YouTube / Medal)</div><input class="wow-input" type="url" id="cUrl" placeholder="https://clips.twitch.tv/... o twitch.tv/videos/..."/></div>
         <div><div class="f-lbl">Descripción (opcional)</div><input class="wow-input" type="text" id="cDesc" placeholder="Lo que pasó aquí no tiene nombre"/></div>
       </div>
       <div style="display:flex;gap:8px;margin-top:4px">
@@ -1927,6 +1957,36 @@ async function loadWAData(){
   }
 }
 
+/* ── TWITCH EMBED HELPERS ── */
+function getTwitchEmbed(url){
+  if(!url) return null;
+  // VOD: twitch.tv/videos/123456
+  const vodMatch = url.match(/twitch\.tv\/videos\/(\d+)/);
+  if(vodMatch) return {type:'vod', id:vodMatch[1]};
+  // Clip: clips.twitch.tv/ClipName or twitch.tv/clip/ClipName
+  const clipMatch = url.match(/clips\.twitch\.tv\/([^?&/]+)/) || url.match(/twitch\.tv\/[^/]+\/clip\/([^?&/]+)/);
+  if(clipMatch) return {type:'clip', id:clipMatch[1]};
+  return null;
+}
+
+function getTwitchThumb(url){
+  const info = getTwitchEmbed(url);
+  if(!info) return null;
+  if(info.type === 'clip'){
+    return `https://clips-media-assets2.twitch.tv/${info.id}-preview-480x272.jpg`;
+  }
+  return null;
+}
+
+function getTwitchEmbedUrl(url){
+  const info = getTwitchEmbed(url);
+  if(!info) return null;
+  const parent = 'thewellsanguino.github.io';
+  if(info.type === 'vod') return `https://player.twitch.tv/?video=${info.id}&parent=${parent}&autoplay=false`;
+  if(info.type === 'clip') return `https://clips.twitch.tv/embed?clip=${info.id}&parent=${parent}&autoplay=false`;
+  return null;
+}
+
 /* ── CLIPS ── */
 async function renderClips(){
   const{data:clips}=await sb.from('clips').select('*').eq('approved',true).order('votes_count',{ascending:false});
@@ -1977,6 +2037,75 @@ async function renderClips(){
   }
   grid.innerHTML=h;
 }
+/* ── CLIP COMMENTS ── */
+const commentsCache = {};
+
+async function toggleComments(clipId){
+  const el = document.getElementById('comments-'+clipId);
+  const isOpen = el.style.display !== 'none';
+  el.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen) await loadComments(clipId);
+}
+
+async function loadComments(clipId){
+  const listEl = document.getElementById('comments-list-'+clipId);
+  const countEl = document.getElementById('ccount-'+clipId);
+  const {data} = await sb.from('clip_comments')
+    .select('*').eq('clip_id', clipId)
+    .order('created_at', {ascending:true});
+  const comments = data || [];
+  if(countEl) countEl.textContent = comments.length;
+  if(!listEl) return;
+  if(!comments.length){
+    listEl.innerHTML = '<div style="color:var(--muted);font-size:.78rem;font-style:italic;font-family:Nunito,sans-serif">Sin comentarios aún. ¡Sé el primero!</div>';
+    return;
+  }
+  listEl.innerHTML = comments.map(c => {
+    const time = new Date(c.created_at).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    const date = new Date(c.created_at).toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+    return '<div class="clip-comment">' +
+      '<div class="clip-comment-av">' + (c.username||'?')[0].toUpperCase() + '</div>' +
+      '<div class="clip-comment-bub">' +
+        '<span class="clip-comment-user">' + esc(c.username) + '</span>' +
+        '<span class="clip-comment-time">' + date + ' ' + time + '</span>' +
+        '<div class="clip-comment-text">' + esc(c.content) + '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+async function submitComment(clipId){
+  const input = document.getElementById('comment-input-'+clipId);
+  const content = input.value.trim();
+  if(!content) return;
+  // Get username - ask if not set
+  let username = localStorage.getItem('twdi_username');
+  if(!username){
+    username = prompt('¿Cuál es tu nombre de personaje?');
+    if(!username || !username.trim()) return;
+    username = username.trim();
+    localStorage.setItem('twdi_username', username);
+  }
+  input.value = '';
+  const {error} = await sb.from('clip_comments').insert({
+    clip_id: clipId, username, content
+  });
+  if(error){ toast('Error al comentar'); return; }
+  await loadComments(clipId);
+  toast('💬 Comentario enviado!');
+}
+
+// Load comment counts on render
+async function loadAllCommentCounts(){
+  const {data} = await sb.from('clip_comments').select('clip_id');
+  if(!data) return;
+  const counts = {};
+  data.forEach(c => { counts[c.clip_id] = (counts[c.clip_id]||0)+1; });
+  Object.entries(counts).forEach(([id, count]) => {
+    const el = document.getElementById('ccount-'+id);
+    if(el) el.textContent = count;
+  });
+}
+
 async function submitClip(){
   if(!CU){openModal('loginModal'); return;}
   const char=document.getElementById('cChar').value.trim();
