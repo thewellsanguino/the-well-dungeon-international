@@ -903,12 +903,12 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
     <div class="prize-card pc-1">
       <div class="p-tip">Key más alta del evento. Empate → quien la completó antes.</div>
       <div class="p-top"><span class="p-emoji">🗝️</span><div class="p-name">Key Más Alta</div><div class="p-meme">"gg ez" — nadie. Jamás.</div></div>
-      <div class="p-bottom"><div class="p-amount">250.000</div><span>🥇</span></div>
+      <div class="p-bottom"><div class="p-amount">200.000</div><span>🥇</span></div>
     </div>
     <div class="prize-card pc-2">
       <div class="p-tip">Key más alta con compo creativa. Cualquier spec vale.</div>
       <div class="p-top"><span class="p-emoji">🧪</span><div class="p-name">Key Más Creativa</div><div class="p-meme">"Free comps. Any spec."</div></div>
-      <div class="p-bottom"><div class="p-amount">250.000</div><span>✨</span></div>
+      <div class="p-bottom"><div class="p-amount">200.000</div><span>✨</span></div>
     </div>
     <div class="prize-card pc-3">
       <div class="p-tip">El clip más votado. El gato de los Doritos decide.</div>
@@ -924,6 +924,11 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
       <div class="p-tip">50k por dungeon +12 en menor tiempo. 8 dungeons = 400k.</div>
       <div class="p-top"><span class="p-emoji">⚡</span><div class="p-name">Speed Run ×8</div><div class="p-meme">"El timer no negocia."</div></div>
       <div class="p-bottom"><div class="p-amount">400.000</div><span>⏱️</span></div>
+    </div>
+    <div class="prize-card pc-1">
+      <div class="p-tip">Completa una +12 con el mayor % de trash extra posible en el menor tiempo. No es matar lo mínimo — es arrasar con todo y llegar antes. Gana quien combine más % extra con mejor tiempo.</div>
+      <div class="p-top"><span class="p-emoji">💀</span><div class="p-name">Reto Invictvm</div><div class="p-meme">"Mata todo. Rápido. Ya."</div></div>
+      <div class="p-bottom"><div class="p-amount">100.000</div><span>🏅</span></div>
     </div>
   </div>
 
@@ -2428,30 +2433,8 @@ async function initData(){
     renderTable();
   }
 
-  // Refresh silencioso en background — no bloquea la UI
-  setTimeout(async ()=>{
-    try{
-      await fetch('https://wowaudit-proxy.thewellsanguino.workers.dev/refresh');
-      // Cuando termina, recarga los datos actualizados de Supabase
-      const fresh = await sbGet('rio_cache','select=*');
-      if(Array.isArray(fresh) && fresh.length){
-        fresh.forEach(c=>{
-          const k = c.name.toLowerCase()+'-'+rSlug(c.realm||'');
-          const runs = Array.isArray(c.best_runs) ? c.best_runs : [];
-          rio[k] = {
-            score:c.score||0, runs, cls:c.class||'',
-            spec:c.spec||'', thumb:c.thumb||'', ilvl:c.ilvl||0,
-            best_key:c.best_key||0, best_key_dungeon:c.best_key_dungeon||'',
-            best_key_time:c.best_key_time||0, last_run:c.last_run||null,
-            spec_rank_eu:c.rank_eu||null, wa_ok:false
-          };
-        });
-        await loadParticipants();
-        renderTable();
-        toast('✅ Datos actualizados');
-      }
-    }catch(e){ console.warn('Background refresh:', e.message); }
-  }, 1500); // espera 1.5s para que cargue la UI primero
+  // Nada más — el cron del Worker actualiza cada hora automáticamente
+  // El botón ↻ fuerza refresh manual cuando se necesite
 }
 initData();
 </script>
