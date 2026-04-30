@@ -2412,6 +2412,11 @@ function toast(msg){
 }
 
 /* ── INIT ── */
+// Limpiar sesión vieja de Supabase que bloquea queries
+try{
+  const keys = Object.keys(localStorage).filter(k => k.includes('supabase') && k.includes('auth'));
+  keys.forEach(k => localStorage.removeItem(k));
+}catch(e){}
 updateNav();
 renderClips();
 
