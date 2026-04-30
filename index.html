@@ -2083,9 +2083,9 @@ function getVideoEmbed(url){
 
 /* ── CLIPS ── */
 async function renderClips(){
-  const{data:clips}=await sb.from('clips').select('*').eq('approved',true).order('votes_count',{ascending:false});
-  // Votes tracked locally per browser
+  const clips = await sbGet('clips','select=*&order=votes_count.desc,created_at.desc');
   const grid=document.getElementById('clipsGrid');
+  if(!Array.isArray(clips)){ grid.innerHTML='<div style="color:var(--crimson2);padding:20px">Error cargando clips</div>'; return; }
   let h=`<div class="clip-add-card" onclick="document.getElementById('clipForm').classList.toggle('open')">
       <div style="font-size:2.1rem">🎬</div>
       <div>Subir Clip</div>
