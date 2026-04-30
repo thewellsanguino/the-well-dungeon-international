@@ -2213,10 +2213,12 @@ async function submitClip(){
   const url=document.getElementById('cUrl').value.trim();
   const desc=document.getElementById('cDesc').value.trim();
   if(!char||!title||!url){toast('⚠ Rellena personaje, título y URL'); return;}
-  const{error}=await sb.from('clips').insert({char_name:char,title,url,description:desc});
+  const{error,data}=await sb.from('clips').insert({char_name:char,title,url,description:desc}).select();
   if(error){toast('❌ Error: '+error.message); return;}
   document.getElementById('clipForm').classList.remove('open');
   ['cChar','cTitle','cUrl','cDesc'].forEach(id=>document.getElementById(id).value='');
+  // Esperar un momento para que Supabase procese el insert
+  await new Promise(r=>setTimeout(r,500));
   await renderClips();
   toast('🎬 ¡Clip enviado al Pozo!');
 }
@@ -2412,6 +2414,13 @@ function toast(msg){
 /* ── INIT ── */
 updateNav();
 renderClips();
+
+// Realtime — clips se actualizan solos para todos
+sb.channel('clips-changes')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'clips' }, () => {
+    renderClips();
+  })
+  .subscribe();
 loadMessages();
 
 // Siempre cargar desde Supabase — sin caché local
