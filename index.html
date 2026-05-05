@@ -800,7 +800,7 @@ footer{background:rgba(14,10,4,.98);border-top:1px solid var(--fr2);
     <div class="nav-link" onclick="gotoTab('ranking')">Ranking</div>
     <div class="nav-link" onclick="gotoTab('clips')">Clips</div>
     <div class="nav-link" onclick="gotoTab('normas')">Normas</div>
-    <div class="nav-link" onclick="gotoSection('gazette')">📰 El Semanal</div>
+    <div class="nav-link" onclick="gotoSection('gazette')" style="color:var(--gold2);border:1px solid rgba(201,168,76,.25);background:rgba(201,168,76,.06)">📰 El Semanal</div>
   </div>
   <div class="nav-right">
     <div id="navGuest" style="display:none;gap:6px">
@@ -2454,36 +2454,57 @@ function catClass(cat){
 }
 
 async function loadGazette(){
-  const grid = document.getElementById('gazetteGrid');
-  const dateEl = document.getElementById('gazetteDate');
-  dateEl.textContent = 'Edición del ' + new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const grid      = document.getElementById('gazetteGrid');
+  const hardcoded = document.getElementById('gazetteHardcoded');
+  const dateEl    = document.getElementById('gazetteDate');
+
+  if(dateEl) dateEl.textContent = 'Edición del ' + new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
   const noticias = await sbGet('gazette','select=*&publicado=eq.true&order=created_at.desc&limit=5');
+
   if(!Array.isArray(noticias) || !noticias.length){
-    grid.innerHTML = '<div class="gazette-empty">📰 Sin noticias esta semana. El Pozo descansa... o está depletando.</div>';
+    // Sin datos — mostrar noticias hardcodeadas semana 1
+    if(grid)      grid.style.display      = 'none';
+    if(hardcoded) hardcoded.style.display = 'block';
+    if(adminUnlocked) document.getElementById('gazetteAdminPanel').style.display = 'block';
     return;
   }
 
+  // Hay noticias en Supabase — ocultar hardcoded y mostrar dinámicas
+  if(hardcoded) hardcoded.style.display = 'none';
+  if(!grid) return;
+  grid.style.display = 'flex';
+
+  const catStyle = {
+    'EXCLUSIVA': 'color:#e08888;background:rgba(192,58,58,.15);border:1px solid rgba(192,58,58,.3)',
+    'ESCÁNDALO': 'color:#c0a0f0;background:rgba(124,92,191,.15);border:1px solid rgba(124,92,191,.3)',
+    'BREAKING':  'color:var(--gold2);background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3)',
+    'CORAZÓN':   'color:#f0a0c8;background:rgba(236,72,153,.15);border:1px solid rgba(236,72,153,.3)',
+    'DEPORTES':  'color:#6dd8a0;background:rgba(56,161,105,.15);border:1px solid rgba(56,161,105,.3)',
+  };
+
   let h = '';
   noticias.forEach((n, i) => {
-    const cls = i === 0 ? 'gazette-card gazette-lead' : 'gazette-card';
-    const catCls = catClass(n.categoria);
+    const cat   = (n.categoria||'EXCLUSIVA').toUpperCase();
+    const cSt   = catStyle[cat] || catStyle['EXCLUSIVA'];
     const fecha = new Date(n.created_at).toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
-    h += '<div class="'+cls+'">' +
-      '<span class="gazette-categoria '+catCls+'">'+esc(n.categoria||'EXCLUSIVA')+'</span>' +
-      '<div class="gazette-titulo">'+esc(n.titulo)+'</div>' +
-      (n.subtitulo ? '<div class="gazette-subtitulo">'+esc(n.subtitulo)+'</div>' : '') +
-      '<div class="gazette-contenido">'+esc(n.contenido)+'</div>' +
-      (n.clip_url ? '<div style="margin-top:10px"><a href="'+esc(n.clip_url)+'" target="_blank" rel="noopener" style="font-family:Cinzel,serif;font-size:.6rem;color:var(--gold2);text-decoration:none;border:1px solid var(--gold3);padding:3px 10px;border-radius:3px">Ver clip →</a></div>' : '') +
-      '<div class="gazette-footer">' +
-        '<span class="gazette-autor">Por '+esc(n.autor||'La Redacción del Pozo')+'</span>' +
-        '<span class="gazette-fecha">'+fecha+'</span>' +
-      '</div>' +
-    '</div>';
+    const isLead = i === 0;
+    const bg = isLead
+      ? 'background:linear-gradient(160deg,rgba(30,18,5,.95),rgba(18,12,3,.95));border:1px solid rgba(201,168,76,.25)'
+      : 'background:linear-gradient(160deg,var(--s2),var(--s));border:1px solid var(--fr2)';
+    h += `<div style="border-radius:8px;padding:20px;${bg}">
+      <span style="display:inline-block;font-family:'Cinzel',serif;font-size:.5rem;font-weight:900;letter-spacing:.2em;padding:2px 8px;border-radius:2px;margin-bottom:10px;${cSt}">${esc(cat)}</span>
+      <div style="font-family:'Cinzel',serif;font-weight:900;font-size:${isLead?'clamp(1rem,2.5vw,1.3rem)':'1rem'};color:var(--text2);line-height:1.3;margin-bottom:8px">${esc(n.titulo)}</div>
+      ${n.subtitulo ? `<div style="font-family:'IM Fell English',serif;font-style:italic;color:var(--muted2);font-size:.85rem;margin-bottom:10px;line-height:1.6">${esc(n.subtitulo)}</div>` : ''}
+      <div style="font-family:'Nunito',sans-serif;font-size:.8rem;color:var(--text);line-height:1.8">${esc(n.contenido)}</div>
+      ${n.clip_url ? `<div style="margin-top:10px"><a href="${esc(n.clip_url)}" target="_blank" rel="noopener" style="font-family:'Cinzel',serif;font-size:.6rem;color:var(--gold2);text-decoration:none;border:1px solid var(--gold3);padding:3px 10px;border-radius:3px">Ver clip →</a></div>` : ''}
+      <div style="margin-top:12px;padding-top:8px;border-top:1px solid var(--fr);display:flex;justify-content:space-between;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.08em">
+        <span style="color:var(--muted)">Por ${esc(n.autor||'La Redacción del Pozo')}</span>
+        <span style="color:var(--muted);opacity:.7">${fecha}</span>
+      </div>
+    </div>`;
   });
   grid.innerHTML = h;
-
-  // Show admin panel if unlocked
   if(adminUnlocked) document.getElementById('gazetteAdminPanel').style.display = 'block';
 }
 
@@ -2617,7 +2638,7 @@ initData();
 </div><!-- /heroWrap -->
 
 <!-- GAZETTE -->
-<section id="gazetteSection" style="display:none;min-height:100vh;padding:40px 0 60px;background:linear-gradient(180deg,#0d0f12 0%,#111408 100%)">
+<section id="gazetteSection" style="display:none;min-height:100vh;padding:40px 0 60px;background:linear-gradient(180deg,#0d0f12 0%,#111408 100%);position:relative;z-index:2">
   <div class="container" style="max-width:900px">
 
     <!-- CABECERA -->
@@ -2627,9 +2648,15 @@ initData();
       <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:.9rem;color:var(--muted2);margin-top:6px">*Periodismo de investigación M+ · Sin filtros · Sin vergüenza*</div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 16px;border-bottom:1px solid var(--fr2);margin-bottom:24px">
-      <div style="font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--muted)">SEMANA 1 · EDICIÓN INAUGURAL</div>
+      <div id="gazetteDate" style="font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--muted)">SEMANA 1 · EDICIÓN INAUGURAL</div>
       <div style="font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--muted)">PRECIO: 0 ORO · GRATIS COMO EL SUFRIMIENTO</div>
     </div>
+
+    <!-- NOTICIAS DINÁMICAS SUPABASE — se muestran cuando hay datos -->
+    <div id="gazetteGrid" style="display:none;flex-direction:column;gap:16px;margin-bottom:28px"></div>
+
+    <!-- NOTICIAS HARDCODED semana 1 — siempre visibles como fallback -->
+    <div id="gazetteHardcoded" style="display:block">
 
     <!-- NOTICIA PRINCIPAL -->
     <div style="margin-bottom:24px">
@@ -2728,6 +2755,8 @@ initData();
       <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:.72rem;color:var(--muted2)">*El Semanal del Pozo no se hace responsable de los traumas ocasionados por la lectura de este periódico.*</div>
       <div style="font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.1em;color:var(--muted)">© 2026 El Semanal del Pozo · The Well-Sanguino EU</div>
     </div>
+
+    </div><!-- /gazetteHardcoded -->
 
     <!-- ADMIN PANEL -->
     <div id="gazetteAdminPanel" style="display:none;margin-top:30px">
